@@ -2,6 +2,7 @@
 //   node tests/api-smoke.mjs [baseUrl]
 // Exercises auth, tenant isolation, availability, the booking engine (incl. a
 // concurrent double-booking race), cancellation policy, deposits, cron and reports.
+import "dotenv/config";
 const BASE = process.argv[2] ?? "http://localhost:3000";
 let passed = 0;
 let failed = 0;
@@ -227,6 +228,24 @@ const adminSalons = await call("GET", "/api/admin/salons", { token: admin.access
 check("super admin lists tenants", adminSalons.data.length >= 3);
 const notAdmin = await call("GET", "/api/admin/salons", { token: ownerT });
 check("owner is not super admin", notAdmin.status === 403);
+
+// Regression: compare against the database itself, not an API round trip. A session
+// timezone mismatch once shifted every stored instant while round trips still matched.
+if (process.env.DATABASE_URL) {
+  console.log("Storage");
+  const { default: pg } = await import("pg");
+  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  const row = (
+    await client.query(
+      `SELECT extract(epoch FROM "startTime") * 1000 AS ms, extract(epoch FROM now() - "createdAt") AS age FROM "Booking" WHERE id = $1`,
+      [won.booking.id],
+    )
+  ).rows[0];
+  check("stored instant equals the requested slot", Number(row.ms) === Date.parse(later.start), { stored: new Date(Number(row.ms)).toISOString(), expected: later.start });
+  check("createdAt agrees with the database clock", Math.abs(Number(row.age)) < 600, row);
+  await client.end();
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

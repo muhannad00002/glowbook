@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "echo 'Build locally or in CI: flutter build web --release --dart-define=API_BASE_URL=... --dart-define=APP_BASE_URL=... --dart-define=SHOW_DEMO_ACCOUNTS=false'",
+  "outputDirectory": "build/web",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

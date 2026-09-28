@@ -9,7 +9,14 @@ function createClient() {
   if (!connectionString) throw new Error("DATABASE_URL is not set");
   // Neon's pooled endpoint (PgBouncer, transaction mode) is safe here: every
   // multi-statement unit of work runs inside an explicit transaction.
-  const adapter = new PrismaPg({ connectionString, max: Number(process.env.DB_POOL_MAX ?? 5) });
+  const adapter = new PrismaPg({
+    connectionString,
+    max: Number(process.env.DB_POOL_MAX ?? 5),
+    // The pg adapter sends timestamps without an offset, so Postgres reads them in the
+    // session timezone. Pin it to UTC: on a server whose default timezone is not UTC,
+    // every stored instant would otherwise shift silently.
+    options: "-c timezone=UTC",
+  });
   return new PrismaClient({ adapter });
 }
 

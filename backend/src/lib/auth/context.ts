@@ -34,11 +34,16 @@ function bearer(req: NextRequest): string | null {
   return h.slice(7).trim() || null;
 }
 
+/**
+ * The caller if signed in, null for guests. A token that is present but expired or
+ * invalid is a 401 — not a guest — so the app refreshes and retries instead of
+ * silently acting anonymously (e.g. booking as a guest while signed in).
+ */
 export async function optionalUser(req: NextRequest): Promise<AuthUser | null> {
   const token = bearer(req);
   if (!token) return null;
   const userId = await verifyAccessToken(token);
-  if (!userId) return null;
+  if (!userId) throw unauthorized("Your session has expired.");
   const user = await db.user.findUnique({
     where: { id: userId },
     select: { id: true, name: true, email: true, phone: true, locale: true, isSuperAdmin: true, isActive: true },

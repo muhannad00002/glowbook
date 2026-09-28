@@ -11,6 +11,7 @@ const pg = new EmbeddedPostgres({
   password: "glowbook",
   port: 5433,
   persistent: true,
+  postgresFlags: ["-c", "timezone=UTC"],
 });
 
 const fresh = !existsSync(`${dataDir}/PG_VERSION`);
