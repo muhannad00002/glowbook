@@ -1,0 +1,98 @@
+import { SignJWT, jwtVerify } from "jose";
+import { createHash, randomBytes } from "node:crypto";
+import { db } from "@/lib/db";
+
+const ACCESS_TTL_SECONDS = 15 * 60;
+const REFRESH_TTL_DAYS = 30;
+
+function secret() {
+  const s = process.env.AUTH_SECRET;
+  if (!s || s.length < 32) throw new Error("AUTH_SECRET must be set (32+ chars)");
+  return new TextEncoder().encode(s);
+}
+
+export const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
+export const randomToken = (bytes = 32) => randomBytes(bytes).toString("base64url");
+
+export async function signAccessToken(userId: string) {
+  return new SignJWT({ typ: "access" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(userId)
+    .setIssuedAt()
+    .setExpirationTime(`${ACCESS_TTL_SECONDS}s`)
+    .sign(secret());
+}
+
+export async function verifyAccessToken(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
+    if (payload.typ !== "access" || !payload.sub) return null;
+    return payload.sub;
+  } catch {
+    return null;
+  }
+}
+
+/** Short-lived signed link token for guests managing a booking without an account. */
+export async function signBookingToken(bookingId: string) {
+  return new SignJWT({ typ: "booking" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(bookingId)
+    .setIssuedAt()
+    .setExpirationTime("120d")
+    .sign(secret());
+}
+
+export async function verifyBookingToken(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
+    return payload.typ === "booking" && payload.sub ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+export type TokenPair = { accessToken: string; refreshToken: string; expiresIn: number };
+
+export async function issueSession(userId: string, userAgent?: string | null): Promise<TokenPair> {
+  const refreshToken = randomToken();
+  await db.session.create({
+    data: {
+      userId,
+      tokenHash: sha256(refreshToken),
+      userAgent: userAgent?.slice(0, 250) ?? null,
+      expiresAt: new Date(Date.now() + REFRESH_TTL_DAYS * 86400_000),
+    },
+  });
+  return { accessToken: await signAccessToken(userId), refreshToken, expiresIn: ACCESS_TTL_SECONDS };
+}
+
+/**
+ * Rotating refresh: the presented token is revoked and a new pair issued. Presenting an
+ * already-revoked token means it leaked — every session for that user is revoked.
+ */
+export async function rotateSession(refreshToken: string, userAgent?: string | null): Promise<TokenPair | null> {
+  const session = await db.session.findUnique({
+    where: { tokenHash: sha256(refreshToken) },
+    include: { user: { select: { isActive: true } } },
+  });
+  if (!session) return null;
+  if (session.revokedAt) {
+    await db.session.updateMany({ where: { userId: session.userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    return null;
+  }
+  if (session.expiresAt < new Date() || !session.user.isActive) return null;
+  const revoked = await db.session.updateMany({
+    where: { id: session.id, revokedAt: null },
+    data: { revokedAt: new Date(), lastUsedAt: new Date() },
+  });
+  if (revoked.count !== 1) return null; // lost a race with a parallel refresh
+  return issueSession(session.userId, userAgent);
+}
+
+export async function revokeSession(refreshToken: string) {
+  await db.session.updateMany({
+    where: { tokenHash: sha256(refreshToken), revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+}

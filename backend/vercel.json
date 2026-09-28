@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "regions": ["fra1"],
+  "crons": [
+    { "path": "/api/cron/reminders", "schedule": "*/15 * * * *" }
+  ],
+  "functions": {
+    "src/app/api/**/*.ts": { "maxDuration": 30 }
+  }
+}

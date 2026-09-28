@@ -1,0 +1,16 @@
+# Fallback scheduler for Vercel Hobby plans (which only allow daily Vercel Crons).
+# Calls the reminder job every 15 minutes. Set repository secrets API_BASE_URL and CRON_SECRET.
+name: Reminder job
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger /api/cron/reminders
+        run: |
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.API_BASE_URL }}/api/cron/reminders"
