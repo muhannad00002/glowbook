@@ -27,6 +27,27 @@ glowbook/
 
 ---
 
+## Live (demo) deployment
+
+| | URL |
+|---|---|
+| Web app | https://glowbook-salon-sepia.vercel.app |
+| Public booking page | https://glowbook-salon-sepia.vercel.app/salon/maison-beauty |
+| API | https://glowbook-api-eta.vercel.app/api/health |
+
+Vercel team **singaf** (Hobby): projects `glowbook-api` (root `backend/`) and `glowbook-salon`
+(static `app/build/web`). Neon project **glowbook** (`calm-glade-96577176`, aws-eu-central-1),
+seeded with the demo data — the demo logins below work there. **Change or remove the demo
+accounts before real salons use it.** Production secrets live only in Vercel env vars (a local
+copy is in the git-ignored `backend/.env.production.local`).
+
+Reminders: Hobby allows one cron per day, so `vercel.json` runs the job daily at 05:00 UTC.
+For the intended 15-minute cadence, push the repo to GitHub and set the `API_BASE_URL` and
+`CRON_SECRET` repository secrets for `.github/workflows/reminders.yml` (or upgrade to Pro and set
+the schedule back to `*/15 * * * *`).
+
+---
+
 ## Key technical decisions
 
 **Double bookings are impossible at the database level.** Two independent guards:
@@ -158,8 +179,8 @@ flutter analyze           # app/
 npx vercel --prod
 ```
 Seed production once only if you want the demo (`npm run db:seed` with prod `DATABASE_URL`).
-Cron: `vercel.json` schedules `/api/cron/reminders` every 15 min — **requires Vercel Pro**; on
-Hobby use `.github/workflows/reminders.yml`. See `docs/NOTIFICATIONS.md`.
+Cron: `vercel.json` runs `/api/cron/reminders` daily (Hobby limit); use
+`.github/workflows/reminders.yml` or Vercel Pro for every 15 minutes. See `docs/NOTIFICATIONS.md`.
 
 **Web app → Vercel** (project root `app/`, static): build locally/CI, then deploy `build/web`
 (`app/vercel.json` rewrites every path to `index.html`, so `/salon/maison-beauty` works):
