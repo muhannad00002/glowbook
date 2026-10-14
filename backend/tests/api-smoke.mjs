@@ -262,7 +262,19 @@ const [vb1, vb2] = visit.data?.bookings ?? [];
 check("visit booked as two consecutive bookings", visit.status === 201 && vb1 && vb2 && vb1.endTime === vb2.startTime && vb1.staff.id === vb2.staff.id, visit.message);
 check("visit shares a group", vb1?.groupId === vb1?.id && vb2?.groupId === vb1?.id);
 const sibling = await call("GET", `/api/public/bookings/${vb2?.id}?token=${visit.data?.manageToken}`);
-check("one manage link covers the visit", sibling.status === 200 && sibling.data.canReschedule === false);
+check("one manage link covers the visit", sibling.status === 200 && sibling.data.visit?.serviceIds?.length === 2 && sibling.data.visit.endTime === vb2?.endTime);
+// Move the visit to a start that overlaps where it is now — the parts pass through each other.
+const vEnd = Date.parse(vb2?.endTime ?? 0);
+const vMoveTo =
+  vAvail.slots.find((s) => s.start > vSlot.start && Date.parse(s.start) < vEnd && s.staffIds.includes(vb1?.staff.id)) ??
+  vAvail.slots.find((s) => s.start > vSlot.start && s.staffIds.includes(vb1?.staff.id));
+const vMove = await call("POST", `/api/public/bookings/${vb1?.id}/reschedule?token=${visit.data?.manageToken}`, { body: { startTime: vMoveTo?.start } });
+const vMoved = await call("GET", `/api/public/bookings/${vb2?.id}?token=${visit.data?.manageToken}`);
+check(
+  "rescheduling moves the whole visit",
+  vMove.status === 200 && vMove.data.startTime === vMoveTo?.start && vMoved.data?.startTime === vMove.data.endTime && vMoved.data.visit?.startTime === vMoveTo?.start,
+  vMove.message,
+);
 const visitCancel = await call("POST", `/api/public/bookings/${vb1?.id}/cancel?token=${visit.data?.manageToken}`, { body: {} });
 const sibAfter = await call("GET", `/api/public/bookings/${vb2?.id}?token=${visit.data?.manageToken}`);
 check("cancelling the visit cancels every part", visitCancel.status === 200 && sibAfter.data?.status === "CANCELLED", visitCancel.message);

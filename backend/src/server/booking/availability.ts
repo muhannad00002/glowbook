@@ -32,7 +32,7 @@ export async function loadAvailabilityData(
   staffIds: string[],
   fromDate: string,
   toDate: string, // inclusive
-  opts: { excludeBookingId?: string } = {},
+  opts: { excludeBookingIds?: string[] } = {},
 ) {
   const rangeStart = dayRange(fromDate, salon.timezone).start;
   const rangeEnd = dayRange(toDate, salon.timezone).end;
@@ -50,7 +50,7 @@ export async function loadAvailabilityData(
         status: { notIn: [...LIVE_EXCLUDED] },
         startTime: { lt: rangeEnd },
         blockedUntil: { gt: rangeStart },
-        ...(opts.excludeBookingId ? { id: { not: opts.excludeBookingId } } : {}),
+        ...(opts.excludeBookingIds?.length ? { id: { notIn: opts.excludeBookingIds } } : {}),
       },
       select: { staffId: true, startTime: true, blockedUntil: true },
     }),

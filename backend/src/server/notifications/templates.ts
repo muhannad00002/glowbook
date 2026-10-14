@@ -6,37 +6,37 @@ import type { NotificationType } from "@/generated/prisma/enums";
  * last-resort fallback if the table has no row.
  *
  * Variables: {{customer_name}} {{salon_name}} {{service_name}} {{date}} {{time}}
- *            {{staff_name}} {{booking_id}}
+ *            {{end_time}} {{staff_name}} {{booking_id}} {{manage_link}}
  */
 export const DEFAULT_TEMPLATES: Record<NotificationType, Record<"en" | "ar", { title: string; body: string }>> = {
   BOOKING_CREATED: {
     en: {
       title: "Booking received ✨",
-      body: "Hi {{customer_name}} 💕 We've received your {{service_name}} booking at {{salon_name}} for {{date}} at {{time}}. Ref {{booking_id}}.",
+      body: "Hi {{customer_name}} 💕 We've received your {{service_name}} booking at {{salon_name}} for {{date}} at {{time}}. Ref {{booking_id}}.\nView or reschedule: {{manage_link}}",
     },
     ar: {
       title: "تم استلام حجزك ✨",
-      body: "مرحباً {{customer_name}} 💕 استلمنا حجزك لخدمة {{service_name}} في {{salon_name}} يوم {{date}} الساعة {{time}}. رقم الحجز {{booking_id}}.",
+      body: "مرحباً {{customer_name}} 💕 استلمنا حجزك لخدمة {{service_name}} في {{salon_name}} يوم {{date}} الساعة {{time}}. رقم الحجز {{booking_id}}.\nلعرض الحجز أو تغيير موعده: {{manage_link}}",
     },
   },
   BOOKING_CONFIRMED: {
     en: {
       title: "Appointment confirmed 💕",
-      body: "Hi {{customer_name}} 💕 Your appointment at {{salon_name}} is confirmed for {{date}} at {{time}} with {{staff_name}}. Ref {{booking_id}}.",
+      body: "Hi {{customer_name}} 💕 Your appointment at {{salon_name}} is confirmed for {{date}} at {{time}} with {{staff_name}}. Ref {{booking_id}}.\nView or reschedule: {{manage_link}}",
     },
     ar: {
       title: "تم تأكيد موعدك 💕",
-      body: "مرحباً {{customer_name}} 💕 تم تأكيد موعدك في {{salon_name}} يوم {{date}} الساعة {{time}} مع {{staff_name}}. رقم الحجز {{booking_id}}.",
+      body: "مرحباً {{customer_name}} 💕 تم تأكيد موعدك في {{salon_name}} يوم {{date}} الساعة {{time}} مع {{staff_name}}. رقم الحجز {{booking_id}}.\nلعرض الحجز أو تغيير موعده: {{manage_link}}",
     },
   },
   BOOKING_RESCHEDULED: {
     en: {
       title: "Appointment moved",
-      body: "Hi {{customer_name}}, your {{service_name}} at {{salon_name}} is now on {{date}} at {{time}} with {{staff_name}}.",
+      body: "Hi {{customer_name}}, your {{service_name}} at {{salon_name}} is now on {{date}} at {{time}} with {{staff_name}}.\nView your booking: {{manage_link}}",
     },
     ar: {
       title: "تم تغيير موعدك",
-      body: "مرحباً {{customer_name}}، أصبح موعد {{service_name}} في {{salon_name}} يوم {{date}} الساعة {{time}} مع {{staff_name}}.",
+      body: "مرحباً {{customer_name}}، أصبح موعد {{service_name}} في {{salon_name}} يوم {{date}} الساعة {{time}} مع {{staff_name}}.\nلعرض الحجز: {{manage_link}}",
     },
   },
   BOOKING_CANCELLED: {
@@ -52,11 +52,11 @@ export const DEFAULT_TEMPLATES: Record<NotificationType, Record<"en" | "ar", { t
   REMINDER_24H: {
     en: {
       title: "See you tomorrow 💄",
-      body: "Hi {{customer_name}} 💕 A little reminder: {{service_name}} at {{salon_name}} tomorrow ({{date}}) at {{time}} with {{staff_name}}.",
+      body: "Hi {{customer_name}} 💕 A little reminder: {{service_name}} at {{salon_name}} tomorrow ({{date}}) at {{time}} with {{staff_name}}.\nNeed to change it? {{manage_link}}",
     },
     ar: {
       title: "نراكِ غداً 💄",
-      body: "مرحباً {{customer_name}} 💕 تذكير لطيف: موعد {{service_name}} في {{salon_name}} غداً ({{date}}) الساعة {{time}} مع {{staff_name}}.",
+      body: "مرحباً {{customer_name}} 💕 تذكير لطيف: موعد {{service_name}} في {{salon_name}} غداً ({{date}}) الساعة {{time}} مع {{staff_name}}.\nلتغيير الموعد: {{manage_link}}",
     },
   },
   REMINDER_3H: {

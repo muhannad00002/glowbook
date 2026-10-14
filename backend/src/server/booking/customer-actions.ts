@@ -27,15 +27,35 @@ export async function loadCustomerBooking(id: string, who: { user?: AuthUser | n
     select: { cancellationWindowHours: true, lateCancellationFeeBaisa: true, depositPolicy: true },
   });
   const { customer, ...booking } = row;
+  const parts = row.groupId
+    ? await db.booking.findMany({
+        where: { groupId: row.groupId, status: { notIn: ["CANCELLED", "NO_SHOW"] } },
+        orderBy: { startTime: "asc" },
+        select: { id: true, startTime: true, endTime: true, priceBaisa: true, depositBaisa: true, paidBaisa: true, service: { select: { id: true, name: true, nameAr: true, durationMinutes: true } } },
+      })
+    : [];
+  const visit =
+    parts.length > 1
+      ? {
+          bookingIds: parts.map((p) => p.id),
+          services: parts.map((p) => p.service),
+          serviceIds: parts.map((p) => p.service.id),
+          startTime: parts[0].startTime,
+          endTime: parts[parts.length - 1].endTime,
+          priceBaisa: parts.reduce((sum, p) => sum + p.priceBaisa, 0),
+          depositBaisa: parts.reduce((sum, p) => sum + p.depositBaisa, 0),
+          paidBaisa: parts.reduce((sum, p) => sum + p.paidBaisa, 0),
+        }
+      : null;
   return {
     booking: {
       ...booking,
+      visit,
       customer: { name: customer.name, phone: customer.phone, email: customer.email },
       balanceBaisa: Math.max(0, booking.priceBaisa - booking.paidBaisa),
       canCancel: ["PENDING", "CONFIRMED"].includes(booking.status) && booking.startTime > new Date(),
-      // A multi-service visit is moved as a whole by the salon, not piece by piece online.
+      // A multi-service visit is moved as a whole (see rescheduleBooking).
       canReschedule:
-        !booking.groupId &&
         booking.salon.allowCustomerReschedule &&
         ["PENDING", "CONFIRMED"].includes(booking.status) &&
         booking.startTime > new Date(),

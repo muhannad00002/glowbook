@@ -181,7 +181,7 @@ class _Detail extends ConsumerWidget {
                       padding: const EdgeInsets.all(Space.lg),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Row(children: [
-                          Expanded(child: Text(b.service.display(context.lang), style: context.text.headlineSmall)),
+                          Expanded(child: Text(b.servicesTitle(context.lang), style: context.text.headlineSmall)),
                           StatusChip(b.status),
                         ]),
                         const SizedBox(height: Space.sm),
@@ -217,7 +217,7 @@ class _Detail extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: Space.md),
                   child: AnimatedButton(
-                    label: l.payNow(fmt.money(b.depositBaisa - b.paidBaisa)),
+                    label: l.payNow(fmt.money(b.payDueBaisa)),
                     icon: Icons.credit_card_rounded,
                     onPressed: () => guard(context, () async {
                       final pay = await repo.startPayment(b.id, token: token);
@@ -357,8 +357,9 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
             selected: _slot,
             refreshToken: _refresh,
             onSelected: (s) => setState(() => _slot = s),
-            loadSlots: (date) => repo.slots(salon: b.salon.slug, serviceIds: [b.service.id], date: date, staffId: b.staff.id),
-            loadDays: (from, days) => repo.days(salon: b.salon.slug, serviceIds: [b.service.id], from: from, days: days, staffId: b.staff.id),
+            // A multi-service visit moves as a whole, so look for room for all of it.
+            loadSlots: (date) => repo.slots(salon: b.salon.slug, serviceIds: b.serviceIds, date: date, staffId: b.staff.id),
+            loadDays: (from, days) => repo.days(salon: b.salon.slug, serviceIds: b.serviceIds, from: from, days: days, staffId: b.staff.id),
           ),
           const SizedBox(height: Space.lg),
           AnimatedButton(

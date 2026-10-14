@@ -37,11 +37,19 @@ const chance = (p: number) => rand() < p;
 async function seedTemplates() {
   const channels: NotificationChannel[] = ["IN_APP", "PUSH", "WHATSAPP", "EMAIL", "SMS"];
   let n = 0;
+  let updated = 0;
   for (const [type, byLocale] of Object.entries(DEFAULT_TEMPLATES) as [NotificationType, (typeof DEFAULT_TEMPLATES)[NotificationType]][]) {
     for (const locale of ["en", "ar"] as const) {
       for (const channel of channels) {
         const existing = await db.notificationTemplate.findFirst({ where: { salonId: null, type, channel, locale } });
-        if (existing) continue;
+        if (existing) {
+          // Keep platform defaults current (salon overrides have their own rows).
+          if (existing.body !== byLocale[locale].body || existing.subject !== byLocale[locale].title) {
+            await db.notificationTemplate.update({ where: { id: existing.id }, data: { subject: byLocale[locale].title, body: byLocale[locale].body } });
+            updated++;
+          }
+          continue;
+        }
         await db.notificationTemplate.create({
           data: {
             salonId: null,
@@ -57,7 +65,7 @@ async function seedTemplates() {
       }
     }
   }
-  console.log(`✓ notification templates (${n} new)`);
+  console.log(`✓ notification templates (${n} new, ${updated} updated)`);
 }
 
 async function user(email: string, name: string, password: string, extra: Partial<Prisma.UserCreateInput> = {}) {

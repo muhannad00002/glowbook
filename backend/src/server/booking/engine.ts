@@ -66,7 +66,7 @@ async function verifySlot(
   excludeBookingId?: string,
 ) {
   const date = localDate(start, rules.timezone);
-  const data = await loadAvailabilityData(tx, rules, [staffId], date, date, { excludeBookingId });
+  const data = await loadAvailabilityData(tx, rules, [staffId], date, date, { excludeBookingIds: excludeBookingId ? [excludeBookingId] : [] });
   return checkSlot(buildDay(data, date), rules, staffId, start, opts);
 }
 
@@ -255,6 +255,11 @@ export async function createBooking(input: Omit<CreateBookingInput, "serviceIds"
 
 const RESCHEDULABLE: BookingStatus[] = ["PENDING", "CONFIRMED"];
 
+/**
+ * Moves a booking — or, for a multi-service visit, the whole visit — to a new start.
+ * The services stay back to back with one artist; availability is re-checked for the
+ * whole visit length under the artist's lock, and every move is recorded in history.
+ */
 export async function rescheduleBooking(input: {
   salonId: string;
   bookingId: string;
@@ -268,50 +273,75 @@ export async function rescheduleBooking(input: {
   if (!booking) throw notFound("Booking not found.");
   if (!RESCHEDULABLE.includes(booking.status)) throw badRequest("This booking can no longer be rescheduled.");
 
+  const parts = booking.groupId
+    ? await db.booking.findMany({
+        where: { groupId: booking.groupId, salonId: input.salonId, status: { in: RESCHEDULABLE } },
+        orderBy: { startTime: "asc" },
+      })
+    : [booking];
+
   const salon = await salonRules(db, input.salonId);
-  const { service, eligible } = await loadService(db, input.salonId, booking.serviceId);
+  const visit = await loadVisit(db, input.salonId, parts.map((p) => p.serviceId));
   const staffId = input.staffId ?? booking.staffId;
-  if (!eligible.includes(staffId)) throw badRequest("This artist doesn't offer that service.");
+  if (!visit.eligible.includes(staffId)) {
+    throw badRequest(parts.length > 1 ? "This artist doesn't offer all of these services." : "This artist doesn't offer that service.");
+  }
 
   const opts: SlotOptions = {
-    durationMinutes: service.durationMinutes,
-    bufferMinutes: service.bufferMinutes,
+    durationMinutes: visit.durationMinutes,
+    bufferMinutes: visit.bufferMinutes,
     now: new Date(),
     enforceNotice: input.enforceNotice,
   };
-  const endTime = new Date(input.startTime.getTime() + service.durationMinutes * 60_000);
-  const blockedUntil = new Date(endTime.getTime() + service.bufferMinutes * 60_000);
+  const ids = parts.map((p) => p.id);
+  const anchorId = booking.groupId ?? booking.id;
 
   try {
     return await db.$transaction(async (tx) => {
       await lockStaff(tx, staffId);
-      const problem = await verifySlot(tx, salon, staffId, input.startTime, opts, booking.id);
+      const date = localDate(input.startTime, salon.timezone);
+      const data = await loadAvailabilityData(tx, salon, [staffId], date, date, { excludeBookingIds: ids });
+      const problem = checkSlot(buildDay(data, date), salon, staffId, input.startTime, opts);
       if (problem) throw new ApiError(409, SLOT_PROBLEM_MESSAGES[problem], { reason: problem });
 
-      // Guard against a concurrent status change between our read and this write.
-      const moved = await tx.booking.updateMany({
-        where: { id: booking.id, status: { in: RESCHEDULABLE }, updatedAt: booking.updatedAt },
-        data: { staffId, startTime: input.startTime, endTime, blockedUntil },
-      });
-      if (moved.count !== 1) throw conflict("This booking was just changed. Please refresh and try again.");
+      // Parts of the visit pass through each other while they move; the no-overlap
+      // constraint is still enforced, at commit.
+      if (parts.length > 1) await tx.$executeRaw`SET CONSTRAINTS booking_no_overlap DEFERRED`;
 
-      const history = await tx.bookingStatusHistory.create({
-        data: {
-          salonId: booking.salonId,
-          bookingId: booking.id,
-          kind: "RESCHEDULE",
-          oldStartTime: booking.startTime,
-          oldEndTime: booking.endTime,
-          newStartTime: input.startTime,
-          newEndTime: endTime,
-          oldStaffId: booking.staffId,
-          newStaffId: staffId,
-          changedById: input.changedById,
-          note: input.note ?? null,
-        },
-      });
+      let cursor = input.startTime.getTime();
+      let historyId = "";
+      for (const [i, part] of parts.entries()) {
+        const service = visit.services.find((s) => s.id === part.serviceId)!;
+        const last = i === parts.length - 1;
+        const startTime = new Date(cursor);
+        const endTime = new Date(cursor + service.durationMinutes * 60_000);
+        const blockedUntil = new Date(endTime.getTime() + (last ? service.bufferMinutes : 0) * 60_000);
+        // Guard against a concurrent change between our read and this write.
+        const moved = await tx.booking.updateMany({
+          where: { id: part.id, status: { in: RESCHEDULABLE }, updatedAt: part.updatedAt },
+          data: { staffId, startTime, endTime, blockedUntil },
+        });
+        if (moved.count !== 1) throw conflict("This booking was just changed. Please refresh and try again.");
+        const history = await tx.bookingStatusHistory.create({
+          data: {
+            salonId: part.salonId,
+            bookingId: part.id,
+            kind: "RESCHEDULE",
+            oldStartTime: part.startTime,
+            oldEndTime: part.endTime,
+            newStartTime: startTime,
+            newEndTime: endTime,
+            oldStaffId: part.staffId,
+            newStaffId: staffId,
+            changedById: input.changedById,
+            note: input.note ?? null,
+          },
+        });
+        if (part.id === anchorId) historyId = history.id;
+        cursor = endTime.getTime();
+      }
       const updated = await tx.booking.findUniqueOrThrow({ where: { id: booking.id } });
-      return { booking: updated, historyId: history.id };
+      return { booking: updated, historyId, anchorId, movedIds: ids };
     }, TX_OPTS);
   } catch (e) {
     if (isSlotConflict(e)) throw conflict(SLOT_PROBLEM_MESSAGES.UNAVAILABLE);

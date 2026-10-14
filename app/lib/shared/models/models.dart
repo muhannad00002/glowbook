@@ -698,6 +698,9 @@ class MyBooking {
     this.quote,
     this.pendingPaymentId,
     this.cancellationWindowHours = 24,
+    this.services = const [],
+    this.ownDepositBaisa = 0,
+    this.ownPaidBaisa = 0,
   });
   final String id;
   final String reference;
@@ -724,23 +727,41 @@ class MyBooking {
   final String? pendingPaymentId;
   final int cancellationWindowHours;
 
+  /// Every service of the visit, in order (one entry for a single-service booking).
+  /// start/end/price/deposit/paid above are visit totals.
+  final List<BookingRef> services;
+
+  /// Deposit and paid amount of this booking row alone — what an online payment settles.
+  final int ownDepositBaisa;
+  final int ownPaidBaisa;
+
+  List<String> get serviceIds => services.isEmpty ? [service.id] : services.map((s) => s.id).toList();
+  String servicesTitle(String lang) =>
+      (services.isEmpty ? [service] : services).map((s) => s.display(lang)).join(lang == 'ar' ? ' و ' : ' + ');
+  int get payDueBaisa => (ownDepositBaisa - ownPaidBaisa).clamp(0, 1 << 31);
+
   int get balanceBaisa => (priceBaisa - paidBaisa).clamp(0, 1 << 31);
-  bool get depositOutstanding => paymentRequirement != 'NONE' && paidBaisa < depositBaisa && status == 'PENDING';
+  bool get depositOutstanding => paymentRequirement != 'NONE' && payDueBaisa > 0 && status == 'PENDING';
 
   factory MyBooking.fromJson(Json j) {
     final salon = asJson(j['salon']);
     final review = asJson(j['review']);
     final payments = asJsonList(j['payments']);
     final pending = payments.where((p) => p['status'] == 'PENDING' && p['kind'] != 'REFUND').toList();
+    final visit = asJson(j['visit']);
+    final hasVisit = visit.isNotEmpty;
     return MyBooking(
       id: j['id'] as String,
       reference: j['reference'] as String,
       status: j['status'] as String,
-      start: asDateReq(j['startTime']),
-      end: asDateReq(j['endTime']),
-      priceBaisa: asInt(j['priceBaisa']),
-      depositBaisa: asInt(j['depositBaisa']),
-      paidBaisa: asInt(j['paidBaisa']),
+      start: asDateReq(hasVisit ? visit['startTime'] : j['startTime']),
+      end: asDateReq(hasVisit ? visit['endTime'] : j['endTime']),
+      priceBaisa: asInt(hasVisit ? visit['priceBaisa'] : j['priceBaisa']),
+      depositBaisa: asInt(hasVisit ? visit['depositBaisa'] : j['depositBaisa']),
+      paidBaisa: asInt(hasVisit ? visit['paidBaisa'] : j['paidBaisa']),
+      ownDepositBaisa: asInt(j['depositBaisa']),
+      ownPaidBaisa: asInt(j['paidBaisa']),
+      services: hasVisit ? asJsonList(visit['services']).map(BookingRef.fromJson).toList() : const [],
       paymentRequirement: asStr(j['paymentRequirement']) ?? 'NONE',
       salon: SalonCard.fromJson(salon),
       salonTimezone: asStr(salon['timezone']) ?? 'Asia/Muscat',

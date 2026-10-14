@@ -39,9 +39,9 @@ class GlowbookApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      themeMode: prefs.themeMode,
+      // Glowbook is a light-theme product.
+      themeMode: ThemeMode.light,
       theme: AppTheme.light(prefs.locale),
-      darkTheme: AppTheme.dark(prefs.locale),
     );
   }
 }

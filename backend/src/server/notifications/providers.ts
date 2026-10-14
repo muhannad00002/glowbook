@@ -44,11 +44,11 @@ async function expectOk(res: Response, what: string) {
  * the templates registered in Meta Business Manager (see docs/NOTIFICATIONS.md).
  */
 export const WHATSAPP_TEMPLATE_PARAMS: Partial<Record<NotificationType, string[]>> = {
-  BOOKING_CREATED: ["customer_name", "salon_name", "service_name", "date", "time", "booking_id"],
-  BOOKING_CONFIRMED: ["customer_name", "salon_name", "service_name", "date", "time", "staff_name", "booking_id"],
-  BOOKING_RESCHEDULED: ["customer_name", "salon_name", "service_name", "date", "time", "booking_id"],
+  BOOKING_CREATED: ["customer_name", "salon_name", "service_name", "date", "time", "booking_id", "manage_link"],
+  BOOKING_CONFIRMED: ["customer_name", "salon_name", "service_name", "date", "time", "staff_name", "booking_id", "manage_link"],
+  BOOKING_RESCHEDULED: ["customer_name", "salon_name", "service_name", "date", "time", "booking_id", "manage_link"],
   BOOKING_CANCELLED: ["customer_name", "salon_name", "service_name", "date", "time", "booking_id"],
-  REMINDER_24H: ["customer_name", "salon_name", "service_name", "date", "time", "staff_name"],
+  REMINDER_24H: ["customer_name", "salon_name", "service_name", "date", "time", "staff_name", "manage_link"],
   REMINDER_3H: ["customer_name", "salon_name", "service_name", "time", "staff_name"],
   BOOKING_COMPLETED: ["customer_name", "salon_name", "service_name"],
   REVIEW_REQUEST: ["customer_name", "salon_name"],

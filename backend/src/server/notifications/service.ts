@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { formatLocal } from "@/lib/time";
-import { randomToken } from "@/lib/auth/tokens";
+import { randomToken, signBookingToken } from "@/lib/auth/tokens";
 import type { Notification, Prisma } from "@/generated/prisma/client";
 import type { NotificationChannel, NotificationType } from "@/generated/prisma/enums";
 import { providers } from "./providers";
@@ -45,6 +45,16 @@ async function loadTemplate(
   };
 }
 
+/**
+ * The customer's personal link to view, cancel or reschedule — no account needed. It
+ * opens the booking page of the web app (APP_BASE_URL); the signed token covers every
+ * booking of a multi-service visit.
+ */
+export async function manageLink(bookingId: string) {
+  const base = (process.env.APP_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
+  return `${base}/booking/${bookingId}?token=${await signBookingToken(bookingId)}`;
+}
+
 // ---------------------------------------------------------------------------
 // Booking events
 // ---------------------------------------------------------------------------
@@ -73,18 +83,31 @@ export async function notifyBookingEvent(
     },
   });
   if (!b) return [];
+  // A multi-service visit speaks with one voice — its first booking — so the customer
+  // gets one message for the whole visit, not one per service.
+  if (b.groupId && b.groupId !== b.id) return [];
+  const visit = b.groupId
+    ? await db.booking.findMany({
+        where: { groupId: b.groupId },
+        orderBy: { startTime: "asc" },
+        include: { service: { select: { name: true, nameAr: true } } },
+      })
+    : [b];
   const { salon, customer } = b;
   const locale: Locale = customer.user?.locale === "ar" ? "ar" : "en";
   const ar = locale === "ar";
+  const serviceNames = visit.map((v) => (ar && v.service.nameAr) || v.service.name).join(ar ? " و " : " + ");
   const vars: Record<string, string> = {
     customer_name: customer.name.split(" ")[0],
     salon_name: (ar && salon.nameAr) || salon.name,
-    service_name: (ar && b.service.nameAr) || b.service.name,
+    service_name: serviceNames,
     staff_name: (ar && b.staff.nameAr) || b.staff.name,
     date: formatLocal(b.startTime, salon.timezone, locale, { weekday: "short", day: "numeric", month: "short" }),
     time: formatLocal(b.startTime, salon.timezone, locale, { hour: "numeric", minute: "2-digit" }),
+    end_time: formatLocal(visit[visit.length - 1].endTime, salon.timezone, locale, { hour: "numeric", minute: "2-digit" }),
     booking_id: b.reference,
     booking_uuid: b.id,
+    manage_link: await manageLink(b.id),
   };
   const keyBase = `${b.id}:${type}${opts.eventKey ? `:${opts.eventKey}` : ""}`;
 
@@ -147,7 +170,7 @@ export async function notifyBookingEvent(
         type,
         channel: "IN_APP",
         title: `${titles[type] ?? "Booking update"} · ${customer.name}`,
-        body: `${b.service.name} · ${when} with ${b.staff.name}`,
+        body: `${visit.map((v) => v.service.name).join(" + ")} · ${when} with ${b.staff.name}`,
         dedupeKey: `${keyBase}:team:${userId}`,
       });
     }

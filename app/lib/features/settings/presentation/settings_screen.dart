@@ -626,18 +626,6 @@ class PreferencesSection extends ConsumerWidget {
             if (session != null) ref.read(authControllerProvider.notifier).updateProfile(locale: v.first).ignore();
           },
         ),
-        const SizedBox(height: Space.lg),
-        Text(l.settingsTheme, style: context.text.labelMedium),
-        const SizedBox(height: Space.sm),
-        SegmentedButton<ThemeMode>(
-          segments: [
-            ButtonSegment(value: ThemeMode.system, label: Text(l.settingsThemeSystem), icon: const Icon(Icons.brightness_auto_outlined)),
-            ButtonSegment(value: ThemeMode.light, label: Text(l.settingsThemeLight), icon: const Icon(Icons.light_mode_outlined)),
-            ButtonSegment(value: ThemeMode.dark, label: Text(l.settingsThemeDark), icon: const Icon(Icons.dark_mode_outlined)),
-          ],
-          selected: {prefs.themeMode},
-          onSelectionChanged: (v) => ref.read(preferencesProvider.notifier).setThemeMode(v.first),
-        ),
         if (session != null) ...[
           const SizedBox(height: Space.xl),
           OutlinedButton.icon(

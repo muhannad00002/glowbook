@@ -51,7 +51,7 @@ export async function handleCustomerReschedule(req: NextRequest, id: string, who
   if (!booking.cancellationQuote.isFreeCancellation) {
     throw badRequest("It's too close to your appointment to reschedule online. Please contact the salon.");
   }
-  const { historyId } = await rescheduleBooking({
+  const { historyId, anchorId } = await rescheduleBooking({
     salonId,
     bookingId: id,
     startTime: body.startTime,
@@ -60,7 +60,7 @@ export async function handleCustomerReschedule(req: NextRequest, id: string, who
     enforceNotice: true,
   });
   await audit({ req, salonId, userId: who.user?.id, action: "booking.rescheduled.customer", entityType: "Booking", entityId: id });
-  afterResponse(() => notifyBookingEvent(id, "BOOKING_RESCHEDULED", { eventKey: historyId, notifySalon: true }));
+  afterResponse(() => notifyBookingEvent(anchorId, "BOOKING_RESCHEDULED", { eventKey: historyId, notifySalon: true }));
   const view = await loadCustomerBooking(id, { ...who, token });
   return ok(view.booking, "Your appointment has been moved ✨");
 }

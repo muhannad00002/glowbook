@@ -20,7 +20,7 @@ export const POST = route(async (req, { id }) => {
   const ctx = await requireSalon(req, ROLES.FRONT_DESK);
   await loadSalonBooking(ctx, id);
   const body = await parseBody(req, schema);
-  const { booking, historyId } = await rescheduleBooking({
+  const { booking, historyId, anchorId } = await rescheduleBooking({
     salonId: ctx.salonId,
     bookingId: id,
     startTime: body.startTime,
@@ -32,7 +32,7 @@ export const POST = route(async (req, { id }) => {
   await audit({ req, salonId: ctx.salonId, userId: ctx.user.id, action: "booking.rescheduled", entityType: "Booking", entityId: id, metadata: { to: body.startTime.toISOString() } });
   if (body.notifyCustomer) {
     afterResponse(() =>
-      notifyBookingEvent(id, "BOOKING_RESCHEDULED", { eventKey: historyId, notifySalon: true, actorUserId: ctx.user.id }),
+      notifyBookingEvent(anchorId, "BOOKING_RESCHEDULED", { eventKey: historyId, notifySalon: true, actorUserId: ctx.user.id }),
     );
   }
   const full = await db.booking.findUniqueOrThrow({ where: { id: booking.id }, select: bookingSalonSelect });
