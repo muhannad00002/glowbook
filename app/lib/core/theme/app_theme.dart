@@ -252,8 +252,8 @@ abstract final class AppTheme {
         actionTextColor: scheme.inversePrimary,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.onPrimary : scheme.outline),
-        trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.primary : scheme.surfaceContainerHigh),
+        thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.onPrimary : scheme.onSurfaceVariant),
+        trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? scheme.primary : scheme.surfaceContainerHighest),
         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(

@@ -4,6 +4,7 @@ import { badRequest, notFound } from "@/lib/http";
 import { optionalUser } from "@/lib/auth/context";
 import { addDays, localDate, localMinute } from "@/lib/time";
 import { buildDay, generateSlots, loadAvailabilityData } from "./availability";
+import { loadVisit } from "./engine";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -26,7 +27,8 @@ export async function isDeskCaller(req: NextRequest, salonId: string) {
 
 export async function availabilityFor(input: {
   salonIdOrSlug: string;
-  serviceId: string;
+  /** One or more services booked back to back with the same artist. */
+  serviceIds: string[];
   staffId?: string | null;
   fromDate: string;
   days: number;
@@ -36,17 +38,12 @@ export async function availabilityFor(input: {
   const desk = typeof input.desk === "function" ? await input.desk(salon.id) : input.desk;
   if (!salon.isPublished && !desk) throw notFound("Salon not found.");
 
-  const service = await db.service.findFirst({
-    where: { id: input.serviceId, salonId: salon.id, deletedAt: null, isActive: true },
-    include: { staff: { include: { staff: { select: { id: true, isActive: true, sortOrder: true } } } } },
-  });
-  if (!service) throw notFound("This service isn't available.");
-  let staffIds = service.staff
-    .filter((s) => s.staff.isActive)
-    .sort((a, b) => a.staff.sortOrder - b.staff.sortOrder)
-    .map((s) => s.staff.id);
+  const visit = await loadVisit(db, salon.id, input.serviceIds);
+  let staffIds = visit.eligible;
   if (input.staffId) {
-    if (!staffIds.includes(input.staffId)) throw badRequest("This artist doesn't offer that service.");
+    if (!staffIds.includes(input.staffId)) {
+      throw badRequest(visit.services.length > 1 ? "This artist doesn't offer all of these services." : "This artist doesn't offer that service.");
+    }
     staffIds = [input.staffId];
   }
 
@@ -62,8 +59,8 @@ export async function availabilityFor(input: {
     for (let d = from; d <= to; d = addDays(d, 1)) {
       const plan = buildDay(data, d);
       const slots = generateSlots(plan, salon, {
-        durationMinutes: service.durationMinutes,
-        bufferMinutes: service.bufferMinutes,
+        durationMinutes: visit.durationMinutes,
+        bufferMinutes: visit.bufferMinutes,
         now,
         enforceNotice: !desk,
       });
@@ -87,12 +84,10 @@ export async function availabilityFor(input: {
   return {
     salonId: salon.id,
     timezone: salon.timezone,
-    service: {
-      id: service.id,
-      durationMinutes: service.durationMinutes,
-      priceBaisa: service.priceBaisa,
-      paymentRequirement: service.paymentRequirement,
-      depositBaisa: service.depositBaisa,
+    visit: {
+      serviceIds: visit.services.map((s) => s.id),
+      durationMinutes: visit.durationMinutes,
+      priceBaisa: visit.services.reduce((sum, s) => sum + s.priceBaisa, 0),
     },
     staffIds,
     days,

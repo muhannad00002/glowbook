@@ -1582,4 +1582,104 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get platformPlan => 'الباقة';
+
+  @override
+  String get flowStepChoose => 'اختاري';
+
+  @override
+  String get flowStepDetails => 'بياناتك';
+
+  @override
+  String get flowStepVerify => 'التحقق';
+
+  @override
+  String get flowServicesTitle => 'الخدمات';
+
+  @override
+  String get flowArtistTitle => 'الفنانة';
+
+  @override
+  String get flowDateTitle => 'التاريخ';
+
+  @override
+  String get flowTimeTitle => 'الوقت';
+
+  @override
+  String get flowPickServiceFirst => 'اختاري خدمة لعرض الأوقات المتاحة.';
+
+  @override
+  String get flowNoCommonArtist =>
+      'لا توجد فنانة واحدة تقدم كل هذه الخدمات معاً. جربي خدمات أقل.';
+
+  @override
+  String get flowDayFull => 'محجوز بالكامل في هذا اليوم.';
+
+  @override
+  String flowNextAvailable(String date) {
+    return 'أقرب موعد: $date';
+  }
+
+  @override
+  String get flowNoAvailability =>
+      'لا توجد أوقات متاحة خلال الأسابيع الثلاثة القادمة.';
+
+  @override
+  String flowServicesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count خدمة',
+      few: '$count خدمات',
+      two: 'خدمتان',
+      one: 'خدمة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get flowSendCode => 'إرسال رمز التحقق';
+
+  @override
+  String get flowPhoneHelp => 'سنرسل رمزاً من ٦ أرقام لتأكيد رقمك.';
+
+  @override
+  String get flowVerifyTitle => 'تأكيد رقمك';
+
+  @override
+  String flowVerifyBody(String phone) {
+    return 'أدخلي الرمز المكوّن من ٦ أرقام المرسل إلى $phone';
+  }
+
+  @override
+  String flowResendIn(int seconds) {
+    return 'إعادة الإرسال بعد $seconds ث';
+  }
+
+  @override
+  String get flowResend => 'إعادة إرسال الرمز';
+
+  @override
+  String get flowCodeResent => 'تم إرسال رمز جديد.';
+
+  @override
+  String get flowChangeNumber => 'تغيير الرقم';
+
+  @override
+  String flowTestCode(String code) {
+    return 'وضع تجريبي — رمزك هو $code';
+  }
+
+  @override
+  String flowWith(String name) {
+    return 'مع $name';
+  }
+
+  @override
+  String get flowEnterCode => 'رمز التحقق';
+
+  @override
+  String get flowVerifiedAccount => 'رقمك موثّق مسبقاً — يمكنك التأكيد مباشرة.';
+
+  @override
+  String get anyArtistShort => 'أي فنانة';
 }

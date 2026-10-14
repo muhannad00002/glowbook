@@ -1583,4 +1583,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get platformPlan => 'Plan';
+
+  @override
+  String get flowStepChoose => 'Choose';
+
+  @override
+  String get flowStepDetails => 'Details';
+
+  @override
+  String get flowStepVerify => 'Verify';
+
+  @override
+  String get flowServicesTitle => 'Services';
+
+  @override
+  String get flowArtistTitle => 'Artist';
+
+  @override
+  String get flowDateTitle => 'Date';
+
+  @override
+  String get flowTimeTitle => 'Time';
+
+  @override
+  String get flowPickServiceFirst => 'Choose a service to see available times.';
+
+  @override
+  String get flowNoCommonArtist =>
+      'No single artist offers all of these services together. Try fewer services.';
+
+  @override
+  String get flowDayFull => 'Fully booked on this day.';
+
+  @override
+  String flowNextAvailable(String date) {
+    return 'Next available: $date';
+  }
+
+  @override
+  String get flowNoAvailability => 'No free times in the next 3 weeks.';
+
+  @override
+  String flowServicesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count services',
+      one: '1 service',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get flowSendCode => 'Send verification code';
+
+  @override
+  String get flowPhoneHelp =>
+      'We\'ll send a 6-digit code to confirm your number.';
+
+  @override
+  String get flowVerifyTitle => 'Verify your number';
+
+  @override
+  String flowVerifyBody(String phone) {
+    return 'Enter the 6-digit code we sent to $phone';
+  }
+
+  @override
+  String flowResendIn(int seconds) {
+    return 'Resend code in ${seconds}s';
+  }
+
+  @override
+  String get flowResend => 'Resend code';
+
+  @override
+  String get flowCodeResent => 'A new code is on its way.';
+
+  @override
+  String get flowChangeNumber => 'Change number';
+
+  @override
+  String flowTestCode(String code) {
+    return 'Test mode — your code is $code';
+  }
+
+  @override
+  String flowWith(String name) {
+    return 'with $name';
+  }
+
+  @override
+  String get flowEnterCode => 'Verification code';
+
+  @override
+  String get flowVerifiedAccount =>
+      'Your number is already verified — you can confirm right away.';
+
+  @override
+  String get anyArtistShort => 'Any';
 }

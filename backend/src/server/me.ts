@@ -12,6 +12,7 @@ export async function buildMe(userId: string) {
       name: true,
       email: true,
       phone: true,
+      phoneVerifiedAt: true,
       avatarUrl: true,
       locale: true,
       isSuperAdmin: true,

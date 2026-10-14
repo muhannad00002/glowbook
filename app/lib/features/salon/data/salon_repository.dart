@@ -24,10 +24,11 @@ class SalonRepository {
   Future<List<Review>> reviews(String slug) async =>
       asJsonList(asJson(await _api.get<Object?>('/api/salons/$slug/reviews'))['items']).map(Review.fromJson).toList();
 
-  Future<List<DayAvailability>> days({required String salon, required String serviceId, required String from, int days = 21, String? staffId}) async {
+  /// [serviceIds] are booked back to back with one artist.
+  Future<List<DayAvailability>> days({required String salon, required List<String> serviceIds, required String from, int days = 21, String? staffId}) async {
     final data = asJson(await _api.get<Object?>('/api/availability/days', query: {
       'salon': salon,
-      'serviceId': serviceId,
+      'serviceIds': serviceIds.join(','),
       'from': from,
       'days': '$days',
       'staffId': staffId,
@@ -35,8 +36,8 @@ class SalonRepository {
     return asJsonList(data['days']).map(DayAvailability.fromJson).toList();
   }
 
-  Future<List<Slot>> slots({required String salon, required String serviceId, required String date, String? staffId}) async {
-    final data = asJson(await _api.get<Object?>('/api/availability', query: {'salon': salon, 'serviceId': serviceId, 'date': date, 'staffId': staffId}));
+  Future<List<Slot>> slots({required String salon, required List<String> serviceIds, required String date, String? staffId}) async {
+    final data = asJson(await _api.get<Object?>('/api/availability', query: {'salon': salon, 'serviceIds': serviceIds.join(','), 'date': date, 'staffId': staffId}));
     return asJsonList(data['slots']).map(Slot.fromJson).toList();
   }
 

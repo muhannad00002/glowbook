@@ -475,6 +475,8 @@ model Customer {
 model Booking {
   id                 String             @id @default(uuid())
   reference          String             @unique
+  /// Several services booked in one visit share a groupId (the first booking's id) and run back to back.
+  groupId            String?
   salonId            String
   customerId         String
   staffId            String
@@ -516,6 +518,7 @@ model Booking {
   @@index([startTime])
   @@index([status])
   @@index([salonId, startTime])
+  @@index([groupId])
 }
 
 model BookingStatusHistory {

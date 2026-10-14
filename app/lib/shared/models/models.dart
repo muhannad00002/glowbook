@@ -19,11 +19,13 @@ HomeRole _homeRole(String? v) => switch (v) {
     };
 
 class AppUser {
-  AppUser({required this.id, required this.name, this.email, this.phone, this.avatarUrl, required this.locale, required this.isSuperAdmin});
+  AppUser({required this.id, required this.name, this.email, this.phone, this.phoneVerified = false, this.avatarUrl, required this.locale, required this.isSuperAdmin});
   final String id;
   final String name;
   final String? email;
   final String? phone;
+  /// The account proved this phone with a one-time code (bookings skip re-verifying).
+  final bool phoneVerified;
   final String? avatarUrl;
   final String locale;
   final bool isSuperAdmin;
@@ -35,6 +37,7 @@ class AppUser {
         name: j['name'] as String,
         email: asStr(j['email']),
         phone: asStr(j['phone']),
+        phoneVerified: j['phoneVerifiedAt'] != null,
         avatarUrl: asStr(j['avatarUrl']),
         locale: asStr(j['locale']) ?? 'en',
         isSuperAdmin: j['isSuperAdmin'] == true,

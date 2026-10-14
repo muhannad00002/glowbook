@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { timingSafeEqual } from "node:crypto";
 import { db } from "@/lib/db";
 import { badRequest, parseBody, route } from "@/lib/http";
 import { phoneSchema } from "@/lib/auth/password";
-import { issueSession, sha256 } from "@/lib/auth/tokens";
+import { issueSession } from "@/lib/auth/tokens";
 import { authPayload } from "@/server/me";
+import { verifyOtp } from "@/server/otp";
 
 const schema = z.object({
   phone: phoneSchema,
@@ -18,24 +18,14 @@ const schema = z.object({
 export const POST = route(async (req) => {
   const { phone, code, name, locale } = await parseBody(req, schema);
 
-  const otp = await db.otpCode.findFirst({
-    where: { phone, consumedAt: null, expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-  });
-  if (!otp || otp.attempts >= 5) throw badRequest("This code has expired. Please request a new one.");
-
-  const expected = Buffer.from(otp.codeHash);
-  const given = Buffer.from(sha256(`${phone}:${code}`));
-  if (!timingSafeEqual(expected, given)) {
-    await db.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
-    throw badRequest("That code isn't right. Please try again.");
-  }
-  await db.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
-
+  // Ask for the name before consuming the code, so she doesn't need a new one.
   let user = await db.user.findUnique({ where: { phone } });
+  if (!user && !name) throw badRequest("Please tell us your name to create your account.", { needsName: true });
+
+  await verifyOtp(phone, code);
+
   if (!user) {
-    if (!name) throw badRequest("Please tell us your name to create your account.", { needsName: true });
-    user = await db.user.create({ data: { phone, name, locale, phoneVerifiedAt: new Date() } });
+    user = await db.user.create({ data: { phone, name: name!, locale, phoneVerifiedAt: new Date() } });
   } else if (!user.phoneVerifiedAt) {
     user = await db.user.update({ where: { id: user.id }, data: { phoneVerifiedAt: new Date() } });
   }

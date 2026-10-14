@@ -87,6 +87,7 @@ export const salonCardSelect = {
 export const bookingSalonSelect = {
   id: true,
   reference: true,
+  groupId: true,
   status: true,
   source: true,
   startTime: true,
@@ -116,6 +117,7 @@ export const bookingSalonSelect = {
 export const bookingCustomerSelect = {
   id: true,
   reference: true,
+  groupId: true,
   status: true,
   startTime: true,
   endTime: true,

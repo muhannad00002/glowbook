@@ -2,7 +2,6 @@
   "@@locale": "en",
   "appName": "Glowbook",
   "appTagline": "Beauty bookings, beautifully managed.",
-
   "actionContinue": "Continue",
   "actionCancel": "Cancel",
   "actionSave": "Save",
@@ -25,13 +24,40 @@
   "labelTomorrow": "Tomorrow",
   "labelYesterday": "Yesterday",
   "labelMinutes": "{count} min",
-  "@labelMinutes": { "placeholders": { "count": { "type": "int" } } },
+  "@labelMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "labelHoursMinutes": "{hours} h {minutes} min",
-  "@labelHoursMinutes": { "placeholders": { "hours": { "type": "int" }, "minutes": { "type": "int" } } },
+  "@labelHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "labelHours": "{hours} h",
-  "@labelHours": { "placeholders": { "hours": { "type": "int" } } },
+  "@labelHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "money": "OMR {amount}",
-  "@money": { "placeholders": { "amount": { "type": "String" } } },
+  "@money": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "errorGeneric": "Something went wrong. Please try again.",
   "errorOffline": "You seem to be offline. Check your connection and try again.",
   "errorRequired": "Required",
@@ -39,7 +65,6 @@
   "errorPhone": "Enter a valid phone number",
   "errorPasswordShort": "At least 8 characters",
   "errorNumber": "Enter a number",
-
   "authWelcomeBack": "Welcome back",
   "authSignInSubtitle": "Sign in to manage your bookings and glow on.",
   "authEmailOrPhone": "Email or phone",
@@ -76,15 +101,26 @@
   "authSendCode": "Send code",
   "authEnterCode": "Enter the 6-digit code",
   "authCodeSentTo": "We sent a code to {phone}",
-  "@authCodeSentTo": { "placeholders": { "phone": { "type": "String" } } },
+  "@authCodeSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "authDevCodeHint": "Development mode code: {code}",
-  "@authDevCodeHint": { "placeholders": { "code": { "type": "String" } } },
+  "@authDevCodeHint": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "authVerify": "Verify",
   "authOr": "or",
   "authSignOut": "Sign out",
   "authSignOutConfirm": "Sign out of Glowbook?",
   "authDemoAccounts": "Demo accounts",
-
   "navHome": "Home",
   "navCalendar": "Calendar",
   "navBookings": "Bookings",
@@ -104,7 +140,6 @@
   "navMore": "More",
   "navPlatform": "Platform",
   "newBooking": "New booking",
-
   "greetingMorning": "Good morning",
   "greetingAfternoon": "Good afternoon",
   "greetingEvening": "Good evening",
@@ -114,7 +149,13 @@
   "summaryCompleted": "Completed",
   "summaryRevenue": "Revenue today",
   "summaryExpected": "{amount} booked today",
-  "@summaryExpected": { "placeholders": { "amount": { "type": "String" } } },
+  "@summaryExpected": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "todaysSchedule": "Today's schedule",
   "quickActions": "Quick actions",
   "quickCustomer": "Client",
@@ -122,13 +163,24 @@
   "quickBlockTime": "Block time",
   "nextUp": "Next up",
   "inMinutes": "in {minutes} min",
-  "@inMinutes": { "placeholders": { "minutes": { "type": "int" } } },
+  "@inMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "emptyTodayTitle": "No appointments today",
   "emptyTodayBody": "A quiet day. Share your booking link and let the calendar fill up.",
   "weekRevenue": "Last 7 days",
   "pendingRefunds": "{count, plural, =1{1 refund to settle} other{{count} refunds to settle}}",
-  "@pendingRefunds": { "placeholders": { "count": { "type": "int" } } },
-
+  "@pendingRefunds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "statusPending": "Pending",
   "statusConfirmed": "Confirmed",
   "statusArrived": "Arrived",
@@ -136,7 +188,6 @@
   "statusCompleted": "Completed",
   "statusCancelled": "Cancelled",
   "statusNoShow": "No show",
-
   "calendarDay": "Day",
   "calendarWeek": "Week",
   "calendarMonth": "Month",
@@ -149,8 +200,13 @@
   "calendarPrevious": "Previous",
   "calendarNext": "Next",
   "calendarBookingsCount": "{count, plural, =0{No bookings} =1{1 booking} other{{count} bookings}}",
-  "@calendarBookingsCount": { "placeholders": { "count": { "type": "int" } } },
-
+  "@calendarBookingsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "bookingDetails": "Appointment",
   "bookingReference": "Reference",
   "bookingClient": "Client",
@@ -184,17 +240,37 @@
   "bookingRescheduled": "Appointment moved ✨",
   "historyCreated": "Booked",
   "historyRescheduled": "Moved from {from} to {to}",
-  "@historyRescheduled": { "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } } },
+  "@historyRescheduled": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
   "historyStatus": "Marked {status}",
-  "@historyStatus": { "placeholders": { "status": { "type": "String" } } },
+  "@historyStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
   "historyNote": "Notes updated",
   "historyBy": "by {name}",
-  "@historyBy": { "placeholders": { "name": { "type": "String" } } },
+  "@historyBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "sourceWalkIn": "Walk-in",
   "sourceOnline": "Online",
   "sourceApp": "App",
   "sourceAdmin": "Front desk",
-
   "wizardClient": "Client",
   "wizardService": "Service",
   "wizardArtist": "Artist",
@@ -214,7 +290,6 @@
   "slotMorning": "Morning",
   "slotAfternoon": "Afternoon",
   "slotEvening": "Evening",
-
   "customersTitle": "Clients",
   "customersSearch": "Search clients",
   "customersEmptyTitle": "No clients yet",
@@ -236,7 +311,6 @@
   "customerNever": "Never",
   "customerSaved": "Client saved 💕",
   "customerBookNow": "Book for this client",
-
   "servicesTitle": "Services",
   "serviceAdd": "Add service",
   "serviceEdit": "Edit service",
@@ -262,7 +336,6 @@
   "serviceDeleteConfirm": "Remove this service? Past bookings are kept.",
   "serviceSaved": "Service saved ✨",
   "serviceInactive": "Hidden",
-
   "staffTitle": "Team",
   "staffAdd": "Add team member",
   "staffEdit": "Edit team member",
@@ -288,9 +361,14 @@
   "staffHasLogin": "Has a login",
   "staffTimeOffSaved": "Time off saved",
   "staffClashes": "{count, plural, =1{1 booking falls in this time.} other{{count} bookings fall in this time.}} Save anyway?",
-  "@staffClashes": { "placeholders": { "count": { "type": "int" } } },
+  "@staffClashes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "saveAnyway": "Save anyway",
-
   "blockTitle": "Block time",
   "blockType": "Reason",
   "blockLunch": "Lunch",
@@ -303,7 +381,6 @@
   "blockSaved": "Time blocked",
   "blockStart": "Starts",
   "blockEnd": "Ends",
-
   "reportsTitle": "Reports",
   "reportsLast7": "7 days",
   "reportsLast30": "30 days",
@@ -321,15 +398,25 @@
   "reportsWeekly": "Weekly",
   "reportsMonthly": "Monthly",
   "reportsCompleted": "{count} completed",
-  "@reportsCompleted": { "placeholders": { "count": { "type": "int" } } },
+  "@reportsCompleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reportsAvgPerDay": "{amount} / day",
-  "@reportsAvgPerDay": { "placeholders": { "amount": { "type": "String" } } },
-
+  "@reportsAvgPerDay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "notificationsTitle": "Notifications",
   "notificationsMarkAll": "Mark all read",
   "notificationsEmptyTitle": "All caught up",
   "notificationsEmptyBody": "Booking updates and reminders will appear here.",
-
   "paymentsTitle": "Payments",
   "paymentsCollected": "Collected",
   "paymentsRefunded": "Refunded",
@@ -353,16 +440,20 @@
   "kindRefund": "Refund",
   "paymentStatusPending": "Pending",
   "paymentStatusPaid": "Paid",
-
   "reviewsTitle": "Reviews",
   "reviewsReply": "Reply",
   "reviewsReplyHint": "Thank her for visiting…",
   "reviewsReplied": "Reply posted",
   "reviewsEmpty": "No reviews yet.",
   "reviewsCount": "{count, plural, =0{No reviews} =1{1 review} other{{count} reviews}}",
-  "@reviewsCount": { "placeholders": { "count": { "type": "int" } } },
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reviewsSalonReply": "Reply from the salon",
-
   "settingsTitle": "Settings",
   "settingsSalonProfile": "Salon profile",
   "settingsBookingRules": "Booking rules",
@@ -370,12 +461,24 @@
   "settingsMinNotice": "Minimum notice for online bookings",
   "settingsHorizon": "How far ahead clients can book",
   "settingsHorizonDays": "{days} days",
-  "@settingsHorizonDays": { "placeholders": { "days": { "type": "int" } } },
+  "@settingsHorizonDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "settingsAutoConfirm": "Confirm online bookings automatically",
   "settingsCancellation": "Cancellation policy",
   "settingsCancellationWindow": "Free cancellation up to",
   "settingsHoursBefore": "{hours} hours before",
-  "@settingsHoursBefore": { "placeholders": { "hours": { "type": "int" } } },
+  "@settingsHoursBefore": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "settingsLateFee": "Late cancellation fee (OMR)",
   "settingsDepositPolicy": "Deposit when cancelled in time",
   "settingsDepositRefundable": "Refunded",
@@ -427,7 +530,6 @@
   "roleManager": "Manager",
   "roleReceptionist": "Reception",
   "roleStaff": "Artist",
-
   "discoverTitle": "Find your glow",
   "discoverSubtitle": "Book trusted makeup artists and salons near you.",
   "discoverSearch": "Search salons or services",
@@ -439,7 +541,13 @@
   "catStudio": "Studio",
   "catArtist": "Artists",
   "fromPrice": "from {amount}",
-  "@fromPrice": { "placeholders": { "amount": { "type": "String" } } },
+  "@fromPrice": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "salonBook": "Book appointment",
   "salonAbout": "About",
   "salonHours": "Opening hours",
@@ -448,7 +556,13 @@
   "salonTeam": "Our artists",
   "salonServices": "Services",
   "salonOpenNow": "Open today · {hours}",
-  "@salonOpenNow": { "placeholders": { "hours": { "type": "String" } } },
+  "@salonOpenNow": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
   "salonClosedToday": "Closed today",
   "salonCall": "Call",
   "salonWhatsapp": "WhatsApp",
@@ -458,7 +572,6 @@
   "salonNotFound": "We couldn't find this salon.",
   "salonNextAvailable": "Next available",
   "salonUpcomingClosures": "Upcoming closures",
-
   "flowService": "Service",
   "flowArtist": "Artist",
   "flowTime": "Date & time",
@@ -477,10 +590,22 @@
   "flowRemaining": "Remaining at the salon",
   "flowPolicy": "Cancellation policy",
   "flowPolicyFree": "Free cancellation up to {hours} hours before your appointment.",
-  "@flowPolicyFree": { "placeholders": { "hours": { "type": "int" } } },
+  "@flowPolicyFree": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "flowPolicyDeposit": "After that, your deposit is non-refundable.",
   "flowPolicyFee": "Late cancellations may be charged {amount}.",
-  "@flowPolicyFee": { "placeholders": { "amount": { "type": "String" } } },
+  "@flowPolicyFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "flowBook": "Confirm booking",
   "flowBookAndPay": "Book & pay deposit",
   "flowConfirmed": "Appointment confirmed",
@@ -493,15 +618,19 @@
   "flowSlotTaken": "Someone just took that time. Here are the latest free slots.",
   "flowSignInHint": "Have an account? Sign in to see this booking in the app.",
   "flowManageLinkHint": "Save this page — you can use it to view or cancel your booking.",
-
   "payTitle": "Pay deposit",
   "payTestMode": "Test mode — no real card is charged.",
   "payCardNumber": "Card number",
   "payNow": "Pay {amount}",
-  "@payNow": { "placeholders": { "amount": { "type": "String" } } },
+  "@payNow": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "paySuccess": "Payment received 💕",
   "payUnavailable": "Online payment isn't available yet — please pay at the salon.",
-
   "myUpcoming": "Upcoming",
   "myPast": "Past",
   "myEmptyTitle": "No appointments yet",
@@ -509,11 +638,32 @@
   "myDiscover": "Discover salons",
   "myCancel": "Cancel appointment",
   "myCancelFree": "Free cancellation until {when}.",
-  "@myCancelFree": { "placeholders": { "when": { "type": "String" } } },
+  "@myCancelFree": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
   "myCancelLate": "It's within {hours} hours of your appointment — {amount} may be kept.",
-  "@myCancelLate": { "placeholders": { "hours": { "type": "int" }, "amount": { "type": "String" } } },
+  "@myCancelLate": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "myCancelRefund": "{amount} will be refunded.",
-  "@myCancelRefund": { "placeholders": { "amount": { "type": "String" } } },
+  "@myCancelRefund": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "myReschedule": "Reschedule",
   "myRescheduleTitle": "Choose a new time",
   "myLeaveReview": "Leave a review",
@@ -524,13 +674,11 @@
   "myYourReview": "Your review",
   "myPayDeposit": "Pay deposit",
   "myDirections": "Get directions",
-
   "profileTitle": "Profile",
   "profileFavorites": "Favourite salons",
   "profileNoFavorites": "Tap the heart on a salon to save it here.",
   "profileEdit": "Edit profile",
   "profileSaved": "Profile saved",
-
   "platformTitle": "Platform overview",
   "platformSalons": "Salons",
   "platformActive": "Active (30d)",
@@ -540,5 +688,73 @@
   "platformTenants": "Tenants",
   "platformPublished": "Live",
   "platformHidden": "Hidden",
-  "platformPlan": "Plan"
+  "platformPlan": "Plan",
+  "flowStepChoose": "Choose",
+  "flowStepDetails": "Details",
+  "flowStepVerify": "Verify",
+  "flowServicesTitle": "Services",
+  "flowArtistTitle": "Artist",
+  "flowDateTitle": "Date",
+  "flowTimeTitle": "Time",
+  "flowPickServiceFirst": "Choose a service to see available times.",
+  "flowNoCommonArtist": "No single artist offers all of these services together. Try fewer services.",
+  "flowDayFull": "Fully booked on this day.",
+  "flowNextAvailable": "Next available: {date}",
+  "@flowNextAvailable": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "flowNoAvailability": "No free times in the next 3 weeks.",
+  "flowServicesCount": "{count, plural, =1{1 service} other{{count} services}}",
+  "@flowServicesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flowSendCode": "Send verification code",
+  "flowPhoneHelp": "We'll send a 6-digit code to confirm your number.",
+  "flowVerifyTitle": "Verify your number",
+  "flowVerifyBody": "Enter the 6-digit code we sent to {phone}",
+  "@flowVerifyBody": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "flowResendIn": "Resend code in {seconds}s",
+  "@flowResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "flowResend": "Resend code",
+  "flowCodeResent": "A new code is on its way.",
+  "flowChangeNumber": "Change number",
+  "flowTestCode": "Test mode — your code is {code}",
+  "@flowTestCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "flowWith": "with {name}",
+  "@flowWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "flowEnterCode": "Verification code",
+  "flowVerifiedAccount": "Your number is already verified — you can confirm right away.",
+  "anyArtistShort": "Any"
 }

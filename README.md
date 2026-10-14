@@ -48,6 +48,21 @@ the schedule back to `*/15 * * * *`).
 
 ---
 
+## Customer booking flow (3 steps)
+
+1. **Choose** — toggle one or more services, pick an artist (only those who offer *all* chosen
+   services) or "Any", then a date and time. Several services become one visit: consecutive
+   bookings with the same artist, sharing a `groupId`, booked atomically.
+2. **Details** — name and phone.
+3. **Verify** — a 6-digit code to that phone, then the booking is made. The API refuses a public
+   booking unless the phone is proven (a 30-minute phone token from the code step, or a signed-in
+   account whose verified phone matches) — it is not just a UI step.
+
+Without an SMS/WhatsApp provider codes can't be delivered: `OTP_TEST_MODE=true` makes the API
+return the code (the app shows it as "Test mode"). Demo use only.
+
+---
+
 ## Key technical decisions
 
 **Double bookings are impossible at the database level.** Two independent guards:
@@ -157,7 +172,7 @@ shows one-tap demo chips unless built with `--dart-define=SHOW_DEMO_ACCOUNTS=fal
 ### Tests
 
 ```bash
-npm run test:api          # backend/, against a running API with the seed loaded (57 checks)
+npm run test:api          # backend/, against a running API with the seed loaded (70 checks)
 ```
 ```bash
 flutter test              # app/
@@ -201,8 +216,8 @@ Envelope everywhere: `{ "success": true, "data": …, "message": null }` /
 | Area | Endpoints |
 |---|---|
 | Auth | `POST /api/auth/register · register-salon · login · refresh · logout · forgot-password · reset-password · otp/request · otp/verify · oauth/google · oauth/apple` · `GET/PATCH /api/me` · `POST/DELETE /api/me/devices` |
-| Discovery (public) | `GET /api/salons` · `GET /api/salons/:idOrSlug` · `GET /api/salons/:id/reviews` · `GET /api/availability` · `GET /api/availability/days` |
-| Customer booking | `POST /api/public/bookings` · `GET /api/public/bookings/:id?token=` · `POST …/:id/cancel · reschedule · pay` |
+| Discovery (public) | `GET /api/salons` · `GET /api/salons/:idOrSlug` · `GET /api/salons/:id/reviews` · `GET /api/availability` · `GET /api/availability/days` (`serviceIds=a,b` for a multi-service visit) |
+| Customer booking | `POST /api/public/phone/request` · `POST /api/public/phone/verify` (→ phone token) · `POST /api/public/bookings` (`serviceIds[]`, `phoneToken`) · `GET /api/public/bookings/:id?token=` · `POST …/:id/cancel · reschedule · pay` |
 | My account | `GET /api/my/bookings` · `GET /api/my/bookings/:id` · `POST …/:id/cancel · reschedule · pay · review` · `GET/POST /api/my/favorites` · `DELETE /api/my/favorites/:salonId` |
 | Salon | `GET/PATCH /api/salon` · `GET/PUT /api/salon/hours` · `GET/POST /api/salon/holidays` · `DELETE …/:id` · `GET/POST /api/salon/members` · `PATCH/DELETE …/:id` · `GET/PUT /api/salon/templates` · `GET /api/salon/notification-log` · `POST /api/salons` |
 | Catalogue & team | `GET/POST /api/services` · `GET/PATCH/DELETE /api/services/:id` · `GET/POST /api/service-categories` · `PATCH/DELETE …/:id` · `GET/POST /api/staff` · `GET/PATCH/DELETE /api/staff/:id` · `GET/POST /api/staff/:id/time-off` · `DELETE …/:timeOffId` |

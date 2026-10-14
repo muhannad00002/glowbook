@@ -17,7 +17,9 @@ export async function loadCustomerBooking(id: string, who: { user?: AuthUser | n
   if (!row) throw notFound("Booking not found.");
 
   const ownerOk = !!who.user && row.customer.userId === who.user.id;
-  const tokenOk = !!who.token && (await verifyBookingToken(who.token)) === id;
+  // A manage token names a booking — or the first booking of a multi-service visit.
+  const tokenSub = who.token ? await verifyBookingToken(who.token) : null;
+  const tokenOk = !!tokenSub && (tokenSub === id || tokenSub === row.groupId);
   if (!ownerOk && !tokenOk) throw forbidden("You can't view this booking.");
 
   const salon = await db.salon.findUniqueOrThrow({
@@ -31,8 +33,12 @@ export async function loadCustomerBooking(id: string, who: { user?: AuthUser | n
       customer: { name: customer.name, phone: customer.phone, email: customer.email },
       balanceBaisa: Math.max(0, booking.priceBaisa - booking.paidBaisa),
       canCancel: ["PENDING", "CONFIRMED"].includes(booking.status) && booking.startTime > new Date(),
+      // A multi-service visit is moved as a whole by the salon, not piece by piece online.
       canReschedule:
-        booking.salon.allowCustomerReschedule && ["PENDING", "CONFIRMED"].includes(booking.status) && booking.startTime > new Date(),
+        !booking.groupId &&
+        booking.salon.allowCustomerReschedule &&
+        ["PENDING", "CONFIRMED"].includes(booking.status) &&
+        booking.startTime > new Date(),
       canReview: booking.status === "COMPLETED" && !booking.review,
       cancellationQuote: quoteCancellation(booking, salon, false),
     },

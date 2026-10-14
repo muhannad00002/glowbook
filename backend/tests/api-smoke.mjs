@@ -34,6 +34,14 @@ function check(name, cond, detail) {
 const login = async (identifier, password) => (await call("POST", "/api/auth/login", { body: { identifier, password } })).data;
 const ymd = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Muscat" }).format(d);
 const addDays = (s, n) => ymd(new Date(Date.parse(s + "T12:00:00+04:00") + n * 86400_000));
+const won0Forge = () => [Buffer.from('{"alg":"HS256"}').toString("base64url"), Buffer.from('{"typ":"phone","sub":"+96870000000"}').toString("base64url"), "bad"].join(".");
+const randomPhone = () => `+9687${String(1_000_000 + Math.floor(Math.random() * 8_999_999))}`;
+/** Booking-flow phone verification (the dev server reveals the code as testCode). */
+async function verifyPhone(phone) {
+  const r = await call("POST", "/api/public/phone/request", { body: { phone } });
+  const v = await call("POST", "/api/public/phone/verify", { body: { phone, code: r.data?.testCode } });
+  return v.data?.phoneToken;
+}
 
 console.log(`Glowbook API smoke test → ${BASE}\n`);
 
@@ -110,18 +118,48 @@ const day = [...days.days].sort((a, b) => b.slotCount - a.slotCount)[0].date;
 const avail = (await call("GET", `/api/availability?salon=maison-beauty&serviceId=${soft.id}&date=${day}`)).data;
 check("availability returns slots", avail.slots.length > 0, avail);
 
-// Race: 8 guests try to book the same artist at the same instant.
 const slot = avail.slots[Math.floor(avail.slots.length / 2)];
 const artist = slot.staffIds[0];
+
+console.log("Phone verification");
+const guestPhone = randomPhone();
+const unverified = await call("POST", "/api/public/bookings", {
+  body: { salon: "maison-beauty", serviceId: soft.id, staffId: artist, startTime: slot.start, customer: { name: "No Code", phone: guestPhone } },
+});
+check("booking without phone verification refused", unverified.status === 403 && unverified.data?.needsVerification === true, unverified);
+const sent = await call("POST", "/api/public/phone/request", { body: { phone: guestPhone } });
+check("code requested", sent.status === 200 && /^\d{6}$/.test(sent.data?.testCode ?? ""), sent);
+const wrongCode = await call("POST", "/api/public/phone/verify", { body: { phone: guestPhone, code: sent.data.testCode === "000000" ? "111111" : "000000" } });
+check("wrong code rejected", wrongCode.status === 400, wrongCode.message);
+const okCode = await call("POST", "/api/public/phone/verify", { body: { phone: guestPhone, code: sent.data.testCode } });
+check("right code → phone token", okCode.status === 200 && !!okCode.data?.phoneToken);
+const reused = await call("POST", "/api/public/phone/verify", { body: { phone: guestPhone, code: sent.data.testCode } });
+check("code can't be reused", reused.status === 400);
+const otherPhone = await call("POST", "/api/public/bookings", {
+  body: { salon: "maison-beauty", serviceId: soft.id, staffId: artist, startTime: slot.start, customer: { name: "Wrong Phone", phone: randomPhone() }, phoneToken: okCode.data.phoneToken },
+});
+check("token for another phone refused", otherPhone.status === 403, otherPhone.message);
+const forged = await call("POST", "/api/public/bookings", {
+  body: { salon: "maison-beauty", serviceId: soft.id, staffId: artist, startTime: slot.start, customer: { name: "Forged", phone: guestPhone }, phoneToken: won0Forge() },
+});
+check("forged phone token refused", forged.status === 401, forged.message);
+
+// Race: 8 verified guests try to book the same artist at the same instant.
+const racers = [];
+for (let i = 0; i < 8; i++) {
+  const phone = randomPhone();
+  racers.push({ phone, token: await verifyPhone(phone) });
+}
 const attempts = await Promise.all(
-  Array.from({ length: 8 }, (_, i) =>
+  racers.map((r, i) =>
     call("POST", "/api/public/bookings", {
       body: {
         salon: "maison-beauty",
         serviceId: soft.id,
         staffId: artist,
         startTime: slot.start,
-        customer: { name: `Race Guest ${i}`, phone: `+9687${String(1000000 + i)}` },
+        customer: { name: `Race Guest ${i}`, phone: r.phone },
+        phoneToken: r.token,
       },
     }),
   ),
@@ -168,7 +206,8 @@ const anyBook = await call("POST", "/api/public/bookings", {
 check("any-available booking by signed-in customer", anyBook.status === 201 && anySlot.staffIds.includes(anyBook.data.booking.staff.id), anyBook.message);
 
 console.log("Reschedule, cancel, undo");
-const later = after.slots.find((s) => Date.parse(s.start) > Date.parse(slot.start) + 90 * 60_000);
+// Any other free slot far enough away that it cannot overlap the original.
+const later = after.slots.find((s) => Math.abs(Date.parse(s.start) - Date.parse(slot.start)) >= 75 * 60_000);
 const rs = await call("POST", `/api/bookings/${won.booking.id}/reschedule`, { token: ownerT, body: { startTime: later.start } });
 check("front desk reschedule", rs.status === 200 && rs.data.startTime === later.start, rs.message);
 const detail = (await call("GET", `/api/bookings/${won.booking.id}`, { token: ownerT })).data;
@@ -192,8 +231,9 @@ const bDays = (await call("GET", `/api/availability/days?salon=maison-beauty&ser
 const bDay = bDays.days.find((d) => d.slotCount > 0);
 check("bridal availability found", !!bDay, bDays);
 const bSlot = (await call("GET", `/api/availability?salon=maison-beauty&serviceId=${bridal.id}&date=${bDay.date}`)).data.slots[0];
+const bridePhone = randomPhone();
 const bBook = await call("POST", "/api/public/bookings", {
-  body: { salon: "maison-beauty", serviceId: bridal.id, staffId: null, startTime: bSlot.start, customer: { name: "Bride Test", phone: "+96877788899" } },
+  body: { salon: "maison-beauty", serviceId: bridal.id, staffId: null, startTime: bSlot.start, customer: { name: "Bride Test", phone: bridePhone }, phoneToken: await verifyPhone(bridePhone) },
 });
 check("deposit booking held as PENDING", bBook.status === 201 && bBook.data.booking.status === "PENDING" && bBook.data.requiresPayment);
 const pay = await call("POST", `/api/public/bookings/${bBook.data.booking.id}/pay?token=${bBook.data.manageToken}`, { body: { kind: "DEPOSIT" } });
@@ -204,6 +244,28 @@ const desk = await call("POST", `/api/bookings/${bBook.data.booking.id}/payments
 check("desk records remaining OMR 55", desk.status === 201);
 const salonCancel = await call("POST", `/api/bookings/${bBook.data.booking.id}/cancel`, { token: ownerT, body: {} });
 check("salon cancel refunds everything paid", salonCancel.data.quote.refundBaisa === 75000);
+
+console.log("Multi-service visit");
+const hair = services.find((s) => s.name === "Hair Styling");
+const visitIds = [soft.id, hair.id];
+const vDays = (await call("GET", `/api/availability/days?salon=maison-beauty&serviceIds=${visitIds.join(",")}&from=${addDays(ymd(new Date()), 2)}&days=21`)).data;
+const vDay = vDays.days.find((d) => d.slotCount > 0);
+check("visit availability found", !!vDay, vDays);
+const vAvail = (await call("GET", `/api/availability?salon=maison-beauty&serviceIds=${visitIds.join(",")}&date=${vDay.date}`)).data;
+check("visit length = sum of services", vAvail.visit?.durationMinutes === soft.durationMinutes + hair.durationMinutes, vAvail.visit);
+const vSlot = vAvail.slots[0];
+const visitPhone = randomPhone();
+const visit = await call("POST", "/api/public/bookings", {
+  body: { salon: "maison-beauty", serviceIds: visitIds, staffId: null, startTime: vSlot.start, customer: { name: "Visit Guest", phone: visitPhone }, phoneToken: await verifyPhone(visitPhone) },
+});
+const [vb1, vb2] = visit.data?.bookings ?? [];
+check("visit booked as two consecutive bookings", visit.status === 201 && vb1 && vb2 && vb1.endTime === vb2.startTime && vb1.staff.id === vb2.staff.id, visit.message);
+check("visit shares a group", vb1?.groupId === vb1?.id && vb2?.groupId === vb1?.id);
+const sibling = await call("GET", `/api/public/bookings/${vb2?.id}?token=${visit.data?.manageToken}`);
+check("one manage link covers the visit", sibling.status === 200 && sibling.data.canReschedule === false);
+const visitCancel = await call("POST", `/api/public/bookings/${vb1?.id}/cancel?token=${visit.data?.manageToken}`, { body: {} });
+const sibAfter = await call("GET", `/api/public/bookings/${vb2?.id}?token=${visit.data?.manageToken}`);
+check("cancelling the visit cancels every part", visitCancel.status === 200 && sibAfter.data?.status === "CANCELLED", visitCancel.message);
 
 console.log("Cron, reports, notifications");
 const cronNo = await call("GET", "/api/cron/reminders");

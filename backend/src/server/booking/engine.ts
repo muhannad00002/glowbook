@@ -71,12 +71,39 @@ async function verifySlot(
 }
 
 // ---------------------------------------------------------------------------
+// Visits (one or more services, back to back, with one artist)
+// ---------------------------------------------------------------------------
+
+export const MAX_SERVICES_PER_VISIT = 5;
+
+/**
+ * Resolves the services of a visit in the order chosen. The artist must offer every
+ * one of them; the visit lasts the sum of their durations, and only the last service's
+ * clean-up buffer applies (no tidy-up needed between services for the same client).
+ */
+export async function loadVisit(tx: Tx, salonId: string, serviceIds: string[]) {
+  const ids = [...new Set(serviceIds)];
+  if (ids.length === 0) throw badRequest("Choose at least one service.");
+  if (ids.length > MAX_SERVICES_PER_VISIT) throw badRequest(`Choose up to ${MAX_SERVICES_PER_VISIT} services per visit.`);
+  const loaded = await Promise.all(ids.map((id) => loadService(tx, salonId, id)));
+  const eligible = loaded[0].eligible.filter((staffId) => loaded.every((l) => l.eligible.includes(staffId)));
+  const services = loaded.map((l) => l.service);
+  return {
+    services,
+    eligible,
+    durationMinutes: services.reduce((sum, sv) => sum + sv.durationMinutes, 0),
+    bufferMinutes: services[services.length - 1].bufferMinutes,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Create
 // ---------------------------------------------------------------------------
 
 export type CreateBookingInput = {
   salonId: string;
-  serviceId: string;
+  /** One or more services, performed back to back in this order. */
+  serviceIds: string[];
   /** null = "Any available" — the engine picks the least-busy qualified artist. */
   staffId: string | null;
   startTime: Date;
@@ -102,41 +129,44 @@ function initialStatusFor(
   return autoConfirm ? "CONFIRMED" : "PENDING";
 }
 
-export async function createBooking(input: CreateBookingInput): Promise<Booking> {
+/**
+ * Books a visit. A multi-service visit becomes consecutive bookings with the same
+ * artist sharing a groupId (the first booking's id). They are written in one
+ * transaction under the artist's lock, so the whole visit is booked or none of it is.
+ */
+export async function createBookings(input: CreateBookingInput): Promise<Booking[]> {
   const salon = await salonRules(db, input.salonId);
-  const { service, eligible } = await loadService(db, input.salonId, input.serviceId);
+  const visit = await loadVisit(db, input.salonId, input.serviceIds);
   const customer = await db.customer.findFirst({ where: { id: input.customerId, salonId: input.salonId } });
   if (!customer) throw notFound("Customer not found.");
 
   const opts: SlotOptions = {
-    durationMinutes: service.durationMinutes,
-    bufferMinutes: service.bufferMinutes,
+    durationMinutes: visit.durationMinutes,
+    bufferMinutes: visit.bufferMinutes,
     now: new Date(),
     enforceNotice: input.enforceNotice,
   };
 
   let candidates: string[];
   if (input.staffId) {
-    if (!eligible.includes(input.staffId)) throw badRequest("This artist doesn't offer that service.");
+    if (!visit.eligible.includes(input.staffId)) {
+      throw badRequest(
+        visit.services.length > 1 ? "This artist doesn't offer all of these services." : "This artist doesn't offer that service.",
+      );
+    }
     candidates = [input.staffId];
   } else {
+    if (visit.eligible.length === 0) throw badRequest("No single artist offers all of these services together.");
     // Rank qualified artists who look free (unlocked read); least-booked that day first.
     const date = localDate(input.startTime, salon.timezone);
-    const data = await loadAvailabilityData(db, salon, eligible, date, date);
+    const data = await loadAvailabilityData(db, salon, visit.eligible, date, date);
     const plan = buildDay(data, date);
     const load = (id: string) => data.bookings.filter((b) => b.staffId === id).length;
-    candidates = eligible
+    candidates = visit.eligible
       .filter((id) => checkSlot(plan, salon, id, input.startTime, opts) === null)
       .sort((a, b) => load(a) - load(b));
     if (candidates.length === 0) throw conflict(SLOT_PROBLEM_MESSAGES.UNAVAILABLE);
   }
-
-  const requirement = service.paymentRequirement;
-  const depositBaisa =
-    requirement === "DEPOSIT" ? Math.min(service.depositBaisa, service.priceBaisa) : requirement === "FULL" ? service.priceBaisa : 0;
-  const status = initialStatusFor(input.source, requirement, salon.autoConfirm, input.initialStatus);
-  const endTime = new Date(input.startTime.getTime() + service.durationMinutes * 60_000);
-  const blockedUntil = new Date(endTime.getTime() + service.bufferMinutes * 60_000);
 
   let lastProblem: string = SLOT_PROBLEM_MESSAGES.UNAVAILABLE;
   for (const staffId of candidates) {
@@ -146,39 +176,62 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
         const problem = await verifySlot(tx, salon, staffId, input.startTime, opts);
         if (problem) throw new ApiError(409, SLOT_PROBLEM_MESSAGES[problem], { reason: problem });
 
-        const booking = await tx.booking.create({
-          data: {
-            reference: newReference(),
-            salonId: salon.id,
-            customerId: customer.id,
-            staffId,
-            serviceId: service.id,
-            startTime: input.startTime,
-            endTime,
-            blockedUntil,
-            status,
-            source: input.source,
-            priceBaisa: service.priceBaisa,
-            paymentRequirement: requirement,
-            depositBaisa,
-            customerNotes: input.customerNotes ?? null,
-            internalNotes: input.internalNotes ?? null,
-            createdById: input.createdById,
-          },
-        });
-        await tx.bookingStatusHistory.create({
-          data: {
-            salonId: salon.id,
-            bookingId: booking.id,
-            kind: "CREATED",
-            toStatus: status,
-            newStartTime: booking.startTime,
-            newEndTime: booking.endTime,
-            newStaffId: staffId,
-            changedById: input.createdById,
-          },
-        });
-        return booking;
+        const created: Booking[] = [];
+        let cursor = input.startTime.getTime();
+        for (const [i, service] of visit.services.entries()) {
+          const last = i === visit.services.length - 1;
+          const requirement = service.paymentRequirement;
+          const depositBaisa =
+            requirement === "DEPOSIT"
+              ? Math.min(service.depositBaisa, service.priceBaisa)
+              : requirement === "FULL"
+                ? service.priceBaisa
+                : 0;
+          const status = initialStatusFor(input.source, requirement, salon.autoConfirm, input.initialStatus);
+          const startTime = new Date(cursor);
+          const endTime = new Date(cursor + service.durationMinutes * 60_000);
+          const blockedUntil = new Date(endTime.getTime() + (last ? service.bufferMinutes : 0) * 60_000);
+          const booking = await tx.booking.create({
+            data: {
+              reference: newReference(),
+              groupId: created[0]?.id ?? null,
+              salonId: salon.id,
+              customerId: customer.id,
+              staffId,
+              serviceId: service.id,
+              startTime,
+              endTime,
+              blockedUntil,
+              status,
+              source: input.source,
+              priceBaisa: service.priceBaisa,
+              paymentRequirement: requirement,
+              depositBaisa,
+              customerNotes: i === 0 ? (input.customerNotes ?? null) : null,
+              internalNotes: i === 0 ? (input.internalNotes ?? null) : null,
+              createdById: input.createdById,
+            },
+          });
+          await tx.bookingStatusHistory.create({
+            data: {
+              salonId: salon.id,
+              bookingId: booking.id,
+              kind: "CREATED",
+              toStatus: status,
+              newStartTime: booking.startTime,
+              newEndTime: booking.endTime,
+              newStaffId: staffId,
+              changedById: input.createdById,
+            },
+          });
+          created.push(booking);
+          cursor = endTime.getTime();
+        }
+        // The first booking of a multi-service visit anchors the group.
+        if (created.length > 1) {
+          created[0] = await tx.booking.update({ where: { id: created[0].id }, data: { groupId: created[0].id } });
+        }
+        return created;
       }, TX_OPTS);
     } catch (e) {
       const retryable = isSlotConflict(e) || (e instanceof ApiError && e.status === 409);
@@ -188,6 +241,12 @@ export async function createBooking(input: CreateBookingInput): Promise<Booking>
     }
   }
   throw conflict(lastProblem);
+}
+
+/** Single-service convenience (front-desk bookings). */
+export async function createBooking(input: Omit<CreateBookingInput, "serviceIds"> & { serviceId: string }): Promise<Booking> {
+  const { serviceId, ...rest } = input;
+  return (await createBookings({ ...rest, serviceIds: [serviceId] }))[0];
 }
 
 // ---------------------------------------------------------------------------

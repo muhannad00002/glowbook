@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { db } from "@/lib/db";
 import { badRequest, ok, parseBody } from "@/lib/http";
 import type { AuthUser } from "@/lib/auth/context";
 import { cancelBooking, rescheduleBooking } from "./engine";
@@ -20,8 +21,20 @@ export async function handleCustomerCancel(req: NextRequest, id: string, who: Wh
   const { booking, salonId } = await loadCustomerBooking(id, { ...who, token: who.token ?? body.token });
   if (!booking.canCancel) throw badRequest("This booking can no longer be cancelled online. Please contact the salon.");
   const res = await cancelBooking({ salonId, bookingId: id, cancelledById: who.user?.id ?? null, bySalon: false, reason: body.reason });
-  await audit({ req, salonId, userId: who.user?.id, action: "booking.cancelled.customer", entityType: "Booking", entityId: id });
-  afterResponse(() => notifyBookingEvent(id, "BOOKING_CANCELLED", { notifySalon: true }));
+  // Cancelling one part of a multi-service visit cancels the visit.
+  const siblings = booking.groupId
+    ? await db.booking.findMany({
+        where: { groupId: booking.groupId, id: { not: id }, status: { in: ["PENDING", "CONFIRMED"] } },
+        select: { id: true },
+      })
+    : [];
+  for (const s of siblings) {
+    await cancelBooking({ salonId, bookingId: s.id, cancelledById: who.user?.id ?? null, bySalon: false, reason: body.reason });
+  }
+  await audit({ req, salonId, userId: who.user?.id, action: "booking.cancelled.customer", entityType: "Booking", entityId: id, metadata: { alsoCancelled: siblings.map((s) => s.id) } });
+  afterResponse(async () => {
+    for (const bid of [id, ...siblings.map((s) => s.id)]) await notifyBookingEvent(bid, "BOOKING_CANCELLED", { notifySalon: true });
+  });
   const view = await loadCustomerBooking(id, { ...who, token: who.token ?? body.token });
   return ok({ booking: view.booking, quote: res.quote }, "Your appointment has been cancelled.");
 }

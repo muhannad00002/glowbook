@@ -357,8 +357,8 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
             selected: _slot,
             refreshToken: _refresh,
             onSelected: (s) => setState(() => _slot = s),
-            loadSlots: (date) => repo.slots(salon: b.salon.slug, serviceId: b.service.id, date: date, staffId: b.staff.id),
-            loadDays: (from, days) => repo.days(salon: b.salon.slug, serviceId: b.service.id, from: from, days: days, staffId: b.staff.id),
+            loadSlots: (date) => repo.slots(salon: b.salon.slug, serviceIds: [b.service.id], date: date, staffId: b.staff.id),
+            loadDays: (from, days) => repo.days(salon: b.salon.slug, serviceIds: [b.service.id], from: from, days: days, staffId: b.staff.id),
           ),
           const SizedBox(height: Space.lg),
           AnimatedButton(

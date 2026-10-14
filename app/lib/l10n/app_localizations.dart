@@ -3043,6 +3043,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Plan'**
   String get platformPlan;
+
+  /// No description provided for @flowStepChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose'**
+  String get flowStepChoose;
+
+  /// No description provided for @flowStepDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get flowStepDetails;
+
+  /// No description provided for @flowStepVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get flowStepVerify;
+
+  /// No description provided for @flowServicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Services'**
+  String get flowServicesTitle;
+
+  /// No description provided for @flowArtistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get flowArtistTitle;
+
+  /// No description provided for @flowDateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get flowDateTitle;
+
+  /// No description provided for @flowTimeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get flowTimeTitle;
+
+  /// No description provided for @flowPickServiceFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a service to see available times.'**
+  String get flowPickServiceFirst;
+
+  /// No description provided for @flowNoCommonArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'No single artist offers all of these services together. Try fewer services.'**
+  String get flowNoCommonArtist;
+
+  /// No description provided for @flowDayFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully booked on this day.'**
+  String get flowDayFull;
+
+  /// No description provided for @flowNextAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Next available: {date}'**
+  String flowNextAvailable(String date);
+
+  /// No description provided for @flowNoAvailability.
+  ///
+  /// In en, this message translates to:
+  /// **'No free times in the next 3 weeks.'**
+  String get flowNoAvailability;
+
+  /// No description provided for @flowServicesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 service} other{{count} services}}'**
+  String flowServicesCount(int count);
+
+  /// No description provided for @flowSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send verification code'**
+  String get flowSendCode;
+
+  /// No description provided for @flowPhoneHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a 6-digit code to confirm your number.'**
+  String get flowPhoneHelp;
+
+  /// No description provided for @flowVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your number'**
+  String get flowVerifyTitle;
+
+  /// No description provided for @flowVerifyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code we sent to {phone}'**
+  String flowVerifyBody(String phone);
+
+  /// No description provided for @flowResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {seconds}s'**
+  String flowResendIn(int seconds);
+
+  /// No description provided for @flowResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get flowResend;
+
+  /// No description provided for @flowCodeResent.
+  ///
+  /// In en, this message translates to:
+  /// **'A new code is on its way.'**
+  String get flowCodeResent;
+
+  /// No description provided for @flowChangeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Change number'**
+  String get flowChangeNumber;
+
+  /// No description provided for @flowTestCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Test mode — your code is {code}'**
+  String flowTestCode(String code);
+
+  /// No description provided for @flowWith.
+  ///
+  /// In en, this message translates to:
+  /// **'with {name}'**
+  String flowWith(String name);
+
+  /// No description provided for @flowEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get flowEnterCode;
+
+  /// No description provided for @flowVerifiedAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Your number is already verified — you can confirm right away.'**
+  String get flowVerifiedAccount;
+
+  /// No description provided for @anyArtistShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get anyArtistShort;
 }
 
 class _AppLocalizationsDelegate

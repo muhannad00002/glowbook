@@ -96,3 +96,25 @@ export async function revokeSession(refreshToken: string) {
     data: { revokedAt: new Date() },
   });
 }
+
+/**
+ * Proof that the bearer just verified this phone with a one-time code (booking flow).
+ * Short-lived and carries no account access — it only lets a booking use this phone.
+ */
+export async function signPhoneToken(phone: string) {
+  return new SignJWT({ typ: "phone" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(phone)
+    .setIssuedAt()
+    .setExpirationTime("30m")
+    .sign(secret());
+}
+
+export async function verifyPhoneToken(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
+    return payload.typ === "phone" && payload.sub ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}

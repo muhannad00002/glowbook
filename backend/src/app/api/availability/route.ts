@@ -6,7 +6,13 @@ import { availabilityFor, isDeskCaller } from "@/server/booking/query";
 
 const schema = z.object({
   salon: z.string().min(1, "Which salon?"),
-  serviceId: z.string().uuid(),
+  // `serviceIds` (comma-separated, booked back to back) or the single `serviceId`.
+  serviceId: z.string().uuid().optional(),
+  serviceIds: z
+    .string()
+    .optional()
+    .transform((v) => (v ? v.split(",").filter(Boolean) : []))
+    .pipe(z.array(z.string().uuid()).max(5)),
   date: z.string().regex(DATE_RE, "Use YYYY-MM-DD."),
   staffId: z.string().uuid().optional(),
   desk: z.enum(["true", "false"]).optional(),
@@ -20,7 +26,7 @@ export const GET = route(async (req: NextRequest) => {
   const q = parseQuery(req, schema);
   const res = await availabilityFor({
     salonIdOrSlug: q.salon,
-    serviceId: q.serviceId,
+    serviceIds: q.serviceIds.length ? q.serviceIds : q.serviceId ? [q.serviceId] : [],
     staffId: q.staffId,
     fromDate: q.date,
     days: 1,

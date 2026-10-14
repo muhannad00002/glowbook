@@ -6,8 +6,11 @@ import '../../../core/auth/auth_controller.dart';
 import '../../../shared/models/models.dart';
 
 class BookingResult {
-  BookingResult({required this.booking, required this.manageToken, required this.requiresPayment, required this.onlinePaymentAvailable});
-  final MyBooking booking;
+  BookingResult({required this.bookings, required this.manageToken, required this.requiresPayment, required this.onlinePaymentAvailable});
+
+  /// One booking per service, back to back (a single service → one booking).
+  final List<MyBooking> bookings;
+  MyBooking get booking => bookings.first;
   final String manageToken;
   final bool requiresPayment;
   final bool onlinePaymentAvailable;
@@ -19,27 +22,39 @@ class CustomerBookingRepository {
   CustomerBookingRepository(this._api);
   final ApiClient _api;
 
+  /// Sends a 6-digit code to [phone]. Returns the code itself only when the server runs
+  /// in test mode (no SMS/WhatsApp provider connected yet).
+  Future<String?> requestCode(String phone, String locale) async =>
+      asStr(asJson(await _api.post<Object?>('/api/public/phone/request', body: {'phone': phone, 'locale': locale}))['testCode']);
+
+  /// Checks the code; returns a short-lived token proving the phone for the booking.
+  Future<String> verifyCode(String phone, String code) async =>
+      asJson(await _api.post<Object?>('/api/public/phone/verify', body: {'phone': phone, 'code': code}))['phoneToken'] as String;
+
   Future<BookingResult> book({
     required String salon,
-    required String serviceId,
+    required List<String> serviceIds,
     required String? staffId,
     required DateTime start,
     required String name,
     required String phone,
+    String? phoneToken,
     String? email,
     String? notes,
   }) async {
     final j = asJson(await _api.post<Object?>('/api/public/bookings', body: {
       'salon': salon,
-      'serviceId': serviceId,
+      'serviceIds': serviceIds,
+      'phoneToken': ?phoneToken,
       'staffId': staffId,
       'startTime': start.toUtc().toIso8601String(),
       'customer': {'name': name, 'phone': phone, if (email != null && email.isNotEmpty) 'email': email},
       if (notes != null && notes.isNotEmpty) 'notes': notes,
       'source': 'PUBLIC_PAGE',
     }));
+    final list = asJsonList(j['bookings']);
     return BookingResult(
-      booking: MyBooking.fromJson(asJson(j['booking'])),
+      bookings: (list.isEmpty ? [asJson(j['booking'])] : list).map(MyBooking.fromJson).toList(),
       manageToken: j['manageToken'] as String,
       requiresPayment: j['requiresPayment'] == true,
       onlinePaymentAvailable: j['onlinePaymentAvailable'] == true,
