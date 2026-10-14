@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { db } from "@/lib/db";
 import { badRequest, ok, parseBody, route } from "@/lib/http";
-import { optionalUser } from "@/lib/auth/context";
 import { phoneSchema } from "@/lib/auth/password";
 import { signSeasonalToken } from "@/lib/auth/tokens";
 import { resolveCustomer } from "@/server/customers";
@@ -28,35 +26,26 @@ const schema = z.object({
  */
 export const POST = route(async (req) => {
   const body = await parseBody(req, schema);
-  const user = await optionalUser(req);
   const offering = await loadOffering(body.offeringId);
   const salon = offering.event.salon;
   if (!salon.isPublished) throw badRequest("This salon isn't taking online bookings.");
   if (!activeGateway()) throw badRequest("Online payment isn't available yet, so tokens can't be booked online. Please contact the salon.");
-  const verifiedPhone = await requireVerifiedPhone(user, body.customer.phone, body.phoneToken);
+  const verifiedPhone = await requireVerifiedPhone(body.customer.phone, body.phoneToken);
 
-  if (user) {
-    const account = await db.user.findUnique({ where: { id: user.id }, select: { phone: true } });
-    if (account && !account.phone) {
-      const taken = await db.user.findUnique({ where: { phone: verifiedPhone }, select: { id: true } });
-      if (!taken) await db.user.update({ where: { id: user.id }, data: { phone: verifiedPhone, phoneVerifiedAt: new Date() } });
-    }
-  }
   const customer = await resolveCustomer({
     salonId: salon.id,
-    userId: user?.id,
     verifiedPhone,
     name: body.customer.name,
     phone: body.customer.phone,
-    email: body.customer.email ?? user?.email,
-    source: user ? "APP" : "PUBLIC_PAGE",
+    email: body.customer.email,
+    source: "PUBLIC_PAGE",
   });
   const hold = await createTokenHold({ offeringId: offering.id, startTime: body.startTime, customerId: customer.id, notes: body.notes });
-  await audit({ req, salonId: salon.id, userId: user?.id, action: "token.held", entityType: "SeasonalToken", entityId: hold.id, metadata: { number: hold.number } });
+  await audit({ req, salonId: salon.id, action: "token.held", entityType: "SeasonalToken", entityId: hold.id, metadata: { number: hold.number } });
 
   const accessToken = await signSeasonalToken(hold.id);
   return ok(
-    { token: await loadCustomerToken(hold.id, { user, token: accessToken }), accessToken, holdMinutes: TOKEN_HOLD_MINUTES },
+    { token: await loadCustomerToken(hold.id, { token: accessToken }), accessToken, holdMinutes: TOKEN_HOLD_MINUTES },
     `Token #${hold.number} is held for ${TOKEN_HOLD_MINUTES} minutes — pay to confirm it.`,
     201,
   );

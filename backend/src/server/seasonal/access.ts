@@ -1,24 +1,14 @@
 import { db } from "@/lib/db";
-import { ApiError, forbidden, notFound } from "@/lib/http";
+import { ApiError, forbidden, gone, LINK_GRACE_MS, notFound } from "@/lib/http";
 import type { AuthUser } from "@/lib/auth/context";
 import { verifyPhoneToken, verifySeasonalToken } from "@/lib/auth/tokens";
 import { salonCardSelect } from "@/server/dto";
 import { prepayFor } from "./engine";
 
-/**
- * The phone a customer has proven they own: a phone token from the one-time-code step,
- * or a signed-in account's verified phone. Throws unless it is `phone`.
- */
-export async function requireVerifiedPhone(user: AuthUser | null, phone: string, phoneToken?: string) {
-  const account = user
-    ? await db.user.findUnique({ where: { id: user.id }, select: { phone: true, phoneVerifiedAt: true } })
-    : null;
-  let verified = account?.phoneVerifiedAt ? account.phone : null;
-  if (phoneToken) {
-    const fromToken = await verifyPhoneToken(phoneToken);
-    if (!fromToken) throw new ApiError(401, "Your verification has expired. Please verify your phone again.", { needsVerification: true });
-    verified = fromToken;
-  }
+/** The phone a customer has just proven she owns (one-time-code token). Throws unless it is `phone`. */
+export async function requireVerifiedPhone(phone: string, phoneToken?: string) {
+  const verified = phoneToken ? await verifyPhoneToken(phoneToken) : null;
+  if (phoneToken && !verified) throw new ApiError(401, "Your verification has expired. Please verify your phone again.", { needsVerification: true });
   if (verified !== phone) throw new ApiError(403, "Please verify your phone number to continue.", { needsVerification: true });
   return verified;
 }
@@ -53,16 +43,16 @@ export const tokenCustomerSelect = {
   salon: { select: { ...salonCardSelect, timezone: true, phone: true, address: true, addressAr: true } },
 } as const;
 
-/** The token as its customer sees it: the signed-in owner, or a guest with the link token. */
+/** The token as its customer sees it — through the link we sent, until a day after the token. */
 export async function loadCustomerToken(id: string, who: { user?: AuthUser | null; token?: string | null }) {
   const row = await db.seasonalToken.findUnique({
     where: { id },
     select: { ...tokenCustomerSelect, customer: { select: { userId: true, name: true, phone: true } } },
   });
   if (!row) throw notFound("Token not found.");
-  const ownerOk = !!who.user && row.customer.userId === who.user.id;
   const tokenOk = !!who.token && (await verifySeasonalToken(who.token)) === id;
-  if (!ownerOk && !tokenOk) throw forbidden("You can't view this token.");
+  if (!tokenOk) throw forbidden("This link isn't valid. Please use the link we sent you.");
+  if (Date.now() > row.endTime.getTime() + LINK_GRACE_MS) throw gone("This link has expired.");
   const { customer, ...token } = row;
   const holdActive = token.status === "PENDING_PAYMENT" && !!token.holdExpiresAt && token.holdExpiresAt > new Date();
   return {

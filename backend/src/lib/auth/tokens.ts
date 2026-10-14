@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { createHash, randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
+import { ApiError } from "@/lib/http";
 
 const ACCESS_TTL_SECONDS = 15 * 60;
 const REFRESH_TTL_DAYS = 30;
@@ -33,13 +34,17 @@ export async function verifyAccessToken(token: string): Promise<string | null> {
   }
 }
 
-/** Short-lived signed link token for guests managing a booking without an account. */
+/**
+ * Signed link for a customer to view/manage her booking (customers have no accounts).
+ * The link really ends a day after the visit (checked when it is opened, so a
+ * rescheduled visit keeps a working link); the signature itself is a backstop.
+ */
 export async function signBookingToken(bookingId: string) {
   return new SignJWT({ typ: "booking" })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(bookingId)
     .setIssuedAt()
-    .setExpirationTime("120d")
+    .setExpirationTime("60d")
     .sign(secret());
 }
 
@@ -54,7 +59,17 @@ export async function verifyBookingToken(token: string): Promise<string | null> 
 
 export type TokenPair = { accessToken: string; refreshToken: string; expiresIn: number };
 
+/** Only the salon team signs in — customers book and manage through links, without accounts. */
+export async function isTeamUser(userId: string) {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { isActive: true, isSuperAdmin: true, memberships: { where: { isActive: true }, select: { id: true }, take: 1 } },
+  });
+  return !!user?.isActive && (user.isSuperAdmin || user.memberships.length > 0);
+}
+
 export async function issueSession(userId: string, userAgent?: string | null): Promise<TokenPair> {
+  if (!(await isTeamUser(userId))) throw new ApiError(403, "Sign-in is for the salon team only.");
   const refreshToken = randomToken();
   await db.session.create({
     data: {
@@ -87,6 +102,7 @@ export async function rotateSession(refreshToken: string, userAgent?: string | n
     data: { revokedAt: new Date(), lastUsedAt: new Date() },
   });
   if (revoked.count !== 1) return null; // lost a race with a parallel refresh
+  if (!(await isTeamUser(session.userId))) return null;
   return issueSession(session.userId, userAgent);
 }
 
@@ -125,7 +141,7 @@ export async function signSeasonalToken(tokenId: string) {
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(tokenId)
     .setIssuedAt()
-    .setExpirationTime("120d")
+    .setExpirationTime("60d")
     .sign(secret());
 }
 

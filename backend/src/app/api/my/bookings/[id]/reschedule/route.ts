@@ -1,5 +1,0 @@
-import { route } from "@/lib/http";
-import { requireUser } from "@/lib/auth/context";
-import { handleCustomerReschedule } from "@/server/booking/customer-routes";
-
-export const POST = route(async (req, { id }) => handleCustomerReschedule(req, id, { user: await requireUser(req), token: null }));

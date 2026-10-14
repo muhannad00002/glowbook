@@ -3,6 +3,7 @@
 // Exercises auth, tenant isolation, availability, the booking engine (incl. a
 // concurrent double-booking race), cancellation policy, deposits, cron and reports.
 import "dotenv/config";
+import { SignJWT } from "jose";
 const BASE = process.argv[2] ?? "http://localhost:3000";
 let passed = 0;
 let failed = 0;
@@ -56,35 +57,36 @@ const owner = await login("owner@maisonbeauty.om", "Maison#2026");
 check("owner routes to SALON_ADMIN", owner?.me.homeRole === "SALON_ADMIN");
 const staff = await login("sarah@maisonbeauty.om", "Staff#2026");
 check("staff routes to STAFF", staff?.me.homeRole === "STAFF");
-const customer = await login("customer@glowbook.app", "Customer#2026");
-check("customer routes to CUSTOMER", customer?.me.homeRole === "CUSTOMER");
+const custLogin = await call("POST", "/api/auth/login", { body: { identifier: "customer@glowbook.app", password: "Customer#2026" } });
+check("customers can't sign in (no customer accounts)", custLogin.status === 403, custLogin.message);
 const admin = await login("admin@glowbook.app", "Glowbook#2026");
 check("super admin routes to SUPER_ADMIN", admin?.me.homeRole === "SUPER_ADMIN");
 const velvet = await login("owner@velvethair.om", "Velvet#2026");
 
-const refreshed = await call("POST", "/api/auth/refresh", { body: { refreshToken: customer.refreshToken } });
-check("refresh rotates tokens", refreshed.status === 200 && refreshed.data.refreshToken !== customer.refreshToken);
-const reuse = await call("POST", "/api/auth/refresh", { body: { refreshToken: customer.refreshToken } });
+const noor = await login("noor@maisonbeauty.om", "Staff#2026");
+const refreshed = await call("POST", "/api/auth/refresh", { body: { refreshToken: noor.refreshToken } });
+check("refresh rotates tokens", refreshed.status === 200 && refreshed.data.refreshToken !== noor.refreshToken);
+const reuse = await call("POST", "/api/auth/refresh", { body: { refreshToken: noor.refreshToken } });
 check("reused refresh token rejected", reuse.status === 401);
-const customer2 = await login("customer@glowbook.app", "Customer#2026");
 
 const reg = await call("POST", "/api/auth/register", {
   body: { name: "Test Guest", email: `test${Date.now()}@example.com`, password: "Password123" },
 });
-check("register customer", reg.status === 201 && reg.data.me.homeRole === "CUSTOMER");
-const forgot = await call("POST", "/api/auth/forgot-password", { body: { email: "customer@glowbook.app" } });
+check("customer sign-up is off", reg.status === 404);
+const regSalon = await call("POST", "/api/auth/register-salon", { body: {} });
+check("single salon: no new salons", regSalon.status === 404);
+const forgot = await call("POST", "/api/auth/forgot-password", { body: { email: "noor@maisonbeauty.om" } });
 check("forgot password answers generically", forgot.status === 200);
 if (forgot.data?.devResetToken) {
-  const reset = await call("POST", "/api/auth/reset-password", { body: { token: forgot.data.devResetToken, password: "Customer#2026" } });
+  const reset = await call("POST", "/api/auth/reset-password", { body: { token: forgot.data.devResetToken, password: "Staff#2026" } });
   check("reset password with token", reset.status === 200);
-  const again = await call("POST", "/api/auth/reset-password", { body: { token: forgot.data.devResetToken, password: "Customer#2026" } });
+  const again = await call("POST", "/api/auth/reset-password", { body: { token: forgot.data.devResetToken, password: "Staff#2026" } });
   check("reset token single-use", again.status === 400);
 }
-const cust = await login("customer@glowbook.app", "Customer#2026");
-const otp = await call("POST", "/api/auth/otp/request", { body: { phone: "+96890001234" } });
+const otp = await call("POST", "/api/auth/otp/request", { body: { phone: "+96890001239" } });
 if (otp.data?.devCode) {
-  const v = await call("POST", "/api/auth/otp/verify", { body: { phone: "+96890001234", code: otp.data.devCode, name: "Phone User" } });
-  check("phone OTP sign-in", v.status === 200 && v.data.me.user.phone === "+96890001234");
+  const v = await call("POST", "/api/auth/otp/verify", { body: { phone: "+96890001239", code: otp.data.devCode, name: "Phone User" } });
+  check("phone sign-in never creates a customer account", v.status === 400, v.message);
 }
 
 console.log("Multi-tenant isolation");
@@ -97,14 +99,10 @@ const vCust = await call("GET", `/api/customers/${maisonCustomers[0].id}`, { tok
 check("Salon B can't read Salon A customer", vCust.status === 404);
 const spoof = await call("GET", "/api/customers", { token: velvet.accessToken, headers: { "X-Salon-Id": owner.me.memberships[0].salonId } });
 check("X-Salon-Id spoof rejected", spoof.status === 403);
-const custAsSalon = await call("GET", "/api/bookings", { token: cust.accessToken });
-check("customer can't hit salon API", custAsSalon.status === 403);
 const staffReports = await call("GET", "/api/reports", { token: staff.accessToken });
 check("staff can't see reports", staffReports.status === 403);
 const staffBookings = (await call("GET", `/api/bookings?from=${ymd(new Date())}&to=${addDays(ymd(new Date()), 7)}`, { token: staff.accessToken })).data;
 check("staff sees only own bookings", staffBookings.every((b) => b.staffId === staff.me.memberships[0].staffId));
-const custView = await call("GET", "/api/my/bookings?scope=all", { token: cust.accessToken });
-check("customer view hides internal notes", custView.data.every((b) => !("internalNotes" in b)));
 
 console.log("Availability & booking engine");
 const soft = services.find((s) => s.name === "Soft Makeup");
@@ -199,11 +197,13 @@ check("outside hours rejected", late.status === 409 && /working hours|closed/.te
 const day2 = [...days.days].sort((a, b) => b.slotCount - a.slotCount)[1].date;
 const avail2 = (await call("GET", `/api/availability?salon=maison-beauty&serviceId=${soft.id}&date=${day2}`)).data;
 const anySlot = avail2.slots.find((s) => s.staffIds.length > 1) ?? avail2.slots[0];
+const anyPhone = randomPhone();
 const anyBook = await call("POST", "/api/public/bookings", {
-  token: cust.accessToken,
-  body: { salon: "maison-beauty", serviceId: soft.id, staffId: null, startTime: anySlot.start, customer: { name: "Aisha Al-Balushi", phone: "+96899112233" } },
+  token: ownerT, // a team member signed in on the device must not turn this into her booking
+  body: { salon: "maison-beauty", serviceId: soft.id, staffId: null, startTime: anySlot.start, customer: { name: "Aisha Guest", phone: anyPhone }, phoneToken: await verifyPhone(anyPhone) },
 });
-check("any-available booking by signed-in customer", anyBook.status === 201 && anySlot.staffIds.includes(anyBook.data.booking.staff.id), anyBook.message);
+check("any-available booking picks an artist", anyBook.status === 201 && anySlot.staffIds.includes(anyBook.data.booking.staff.id), anyBook.message);
+check("customer view hides internal notes", !("internalNotes" in (anyBook.data?.booking ?? { internalNotes: 1 })));
 
 console.log("Reschedule, cancel, undo");
 // Any other free slot far enough away that it cannot overlap the original.
@@ -218,12 +218,18 @@ const guestView = await call("GET", `/api/public/bookings/${won.booking.id}?toke
 check("guest manage link works", guestView.status === 200);
 const noToken = await call("GET", `/api/public/bookings/${won.booking.id}`);
 check("guest link needs token", noToken.status === 403);
+// Links are temporary: a visit that ended days ago can't be opened, even with a valid signature.
+const pastBookings = (await call("GET", `/api/bookings?from=${addDays(ymd(new Date()), -20)}&to=${addDays(ymd(new Date()), -3)}`, { token: ownerT })).data;
+const old = pastBookings?.[0];
+const oldLink = await new SignJWT({ typ: "booking" }).setProtectedHeader({ alg: "HS256" }).setSubject(old.id).setIssuedAt().setExpirationTime("1h").sign(new TextEncoder().encode(process.env.AUTH_SECRET));
+const expired = await call("GET", `/api/public/bookings/${old.id}?token=${oldLink}`);
+check("link expires a day after the visit", expired.status === 410 && expired.data?.expired === true, expired.message);
 
 const cancel = await call("POST", `/api/bookings/${won.booking.id}/cancel`, { token: ownerT, body: { reason: "Test" } });
 check("salon cancel", cancel.status === 200 && cancel.data.booking.status === "CANCELLED");
 const restore = await call("POST", `/api/bookings/${won.booking.id}/restore`, { token: ownerT });
 check("undo cancellation", restore.status === 200 && restore.data.status === "CONFIRMED", restore.message);
-const myCancel = await call("POST", `/api/my/bookings/${anyBook.data.booking.id}/cancel`, { token: cust.accessToken, body: {} });
+const myCancel = await call("POST", `/api/public/bookings/${anyBook.data.booking.id}/cancel?token=${anyBook.data.manageToken}`, { body: {} });
 check("customer cancel (free window)", myCancel.status === 200 && myCancel.data.quote.isFreeCancellation === true);
 
 console.log("Deposits & payments");

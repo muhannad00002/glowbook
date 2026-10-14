@@ -1,13 +1,13 @@
 import { db } from "@/lib/db";
-import { badRequest, forbidden, notFound } from "@/lib/http";
+import { badRequest, forbidden, gone, LINK_GRACE_MS, notFound } from "@/lib/http";
 import type { AuthUser } from "@/lib/auth/context";
 import { verifyBookingToken } from "@/lib/auth/tokens";
 import { bookingCustomerSelect } from "@/server/dto";
 import { quoteCancellation } from "./engine";
 
 /**
- * Customer-side access to a booking: either the signed-in owner, or a guest holding the
- * signed manage-link token issued when she booked from the public page.
+ * Customer-side access to a booking. Customers have no accounts: the signed link sent
+ * after booking is the only key, and it works until a day after the visit ends.
  */
 export async function loadCustomerBooking(id: string, who: { user?: AuthUser | null; token?: string | null }) {
   const row = await db.booking.findUnique({
@@ -16,11 +16,10 @@ export async function loadCustomerBooking(id: string, who: { user?: AuthUser | n
   });
   if (!row) throw notFound("Booking not found.");
 
-  const ownerOk = !!who.user && row.customer.userId === who.user.id;
   // A manage token names a booking — or the first booking of a multi-service visit.
   const tokenSub = who.token ? await verifyBookingToken(who.token) : null;
   const tokenOk = !!tokenSub && (tokenSub === id || tokenSub === row.groupId);
-  if (!ownerOk && !tokenOk) throw forbidden("You can't view this booking.");
+  if (!tokenOk) throw forbidden("This link isn't valid. Please use the link we sent you.");
 
   const salon = await db.salon.findUniqueOrThrow({
     where: { id: row.salon.id },
@@ -34,6 +33,8 @@ export async function loadCustomerBooking(id: string, who: { user?: AuthUser | n
         select: { id: true, startTime: true, endTime: true, priceBaisa: true, depositBaisa: true, paidBaisa: true, service: { select: { id: true, name: true, nameAr: true, durationMinutes: true } } },
       })
     : [];
+  const visitEnd = parts.length > 1 ? parts[parts.length - 1].endTime : row.endTime;
+  if (Date.now() > visitEnd.getTime() + LINK_GRACE_MS) throw gone("This link has expired.");
   const visit =
     parts.length > 1
       ? {

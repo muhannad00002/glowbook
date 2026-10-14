@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { db } from "@/lib/db";
 import { ApiError, badRequest, ok, parseBody, route } from "@/lib/http";
-import { optionalUser } from "@/lib/auth/context";
 import { phoneSchema } from "@/lib/auth/password";
 import { signBookingToken, verifyPhoneToken } from "@/lib/auth/tokens";
 import { createBookings, MAX_SERVICES_PER_VISIT } from "@/server/booking/engine";
@@ -37,42 +35,30 @@ const schema = z
  * Customer booking — signed in (app) or as a guest (public booking page).
  *
  * The customer's phone must be verified: either a phone token from the one-time-code
- * step, or a signed-in account whose verified phone is the one being booked. This is
- * enforced here, not just in the app. Guests get a signed manage link afterwards.
+ * step. This is enforced here, not just in the app. Customers have no accounts — even
+ * if a team member is signed in on this device, the booking is the customer's — and they
+ * get a signed manage link afterwards.
  */
 export const POST = route(async (req) => {
   const body = await parseBody(req, schema);
-  const user = await optionalUser(req);
   const salon = await findPublishedSalon(body.salon);
   if (!salon.isPublished) throw badRequest("This salon isn't taking online bookings.");
 
-  const account = user
-    ? await db.user.findUnique({ where: { id: user.id }, select: { phone: true, phoneVerifiedAt: true } })
-    : null;
-  let verifiedPhone = account?.phoneVerifiedAt ? account.phone : null;
-  if (body.phoneToken) {
-    const tokenPhone = await verifyPhoneToken(body.phoneToken);
-    if (!tokenPhone) throw new ApiError(401, "Your verification has expired. Please verify your phone again.", { needsVerification: true });
-    verifiedPhone = tokenPhone;
+  const tokenPhone = body.phoneToken ? await verifyPhoneToken(body.phoneToken) : null;
+  if (body.phoneToken && !tokenPhone) {
+    throw new ApiError(401, "Your verification has expired. Please verify your phone again.", { needsVerification: true });
   }
-  if (verifiedPhone !== body.customer.phone) {
+  if (tokenPhone !== body.customer.phone) {
     throw new ApiError(403, "Please verify your phone number to book.", { needsVerification: true });
-  }
-
-  // A signed-in account without a phone adopts the one it just verified (if free).
-  if (user && account && !account.phone) {
-    const taken = await db.user.findUnique({ where: { phone: verifiedPhone }, select: { id: true } });
-    if (!taken) await db.user.update({ where: { id: user.id }, data: { phone: verifiedPhone, phoneVerifiedAt: new Date() } });
   }
 
   const customer = await resolveCustomer({
     salonId: salon.id,
-    userId: user?.id,
-    verifiedPhone,
+    verifiedPhone: tokenPhone,
     name: body.customer.name,
     phone: body.customer.phone,
-    email: body.customer.email ?? user?.email,
-    source: user ? "APP" : "PUBLIC_PAGE",
+    email: body.customer.email,
+    source: "PUBLIC_PAGE",
   });
 
   const bookings = await createBookings({
@@ -81,8 +67,8 @@ export const POST = route(async (req) => {
     staffId: body.staffId,
     startTime: body.startTime,
     customerId: customer.id,
-    source: user ? "CUSTOMER_APP" : body.source,
-    createdById: user?.id ?? null,
+    source: body.source,
+    createdById: null,
     customerNotes: body.notes,
     enforceNotice: true,
   });
@@ -91,7 +77,6 @@ export const POST = route(async (req) => {
   await audit({
     req,
     salonId: salon.id,
-    userId: user?.id,
     action: "booking.created.online",
     entityType: "Booking",
     entityId: first.id,
@@ -105,7 +90,7 @@ export const POST = route(async (req) => {
 
   // One manage link covers the whole visit (the token names the group's first booking).
   const manageToken = await signBookingToken(first.id);
-  const views = await Promise.all(bookings.map((b) => loadCustomerBooking(b.id, { user, token: manageToken })));
+  const views = await Promise.all(bookings.map((b) => loadCustomerBooking(b.id, { token: manageToken })));
   const requiresPayment = bookings.some((b) => b.paymentRequirement !== "NONE" && b.paidBaisa < b.depositBaisa);
   return ok(
     {

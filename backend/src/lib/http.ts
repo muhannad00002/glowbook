@@ -23,6 +23,10 @@ export const unauthorized = (m = "Please sign in to continue.") => new ApiError(
 export const forbidden = (m = "You don't have access to this.") => new ApiError(403, m);
 export const notFound = (m = "Not found.") => new ApiError(404, m);
 export const conflict = (m: string, data?: unknown) => new ApiError(409, m, data);
+export const gone = (m: string) => new ApiError(410, m, { expired: true });
+
+/** A customer's link keeps working until a day after her appointment ends. */
+export const LINK_GRACE_MS = 24 * 3600_000;
 
 export function ok<T>(data: T, message: string | null = null, status = 200) {
   return NextResponse.json<Envelope<T>>({ success: true, data, message }, { status });
