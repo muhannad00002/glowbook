@@ -119,6 +119,9 @@ enum NotificationType {
   REVIEW_REQUEST
   PASSWORD_RESET
   PHONE_OTP
+  TOKEN_CONFIRMED
+  TOKEN_REMINDER_1H
+  TOKEN_CANCELLED
 }
 
 enum NotificationChannel {
@@ -325,6 +328,8 @@ model Salon {
   favorites      Favorite[]
   auditLogs      AuditLog[]
   staffServices  StaffService[]
+  seasonalEvents SeasonalEvent[]
+  seasonalTokens SeasonalToken[]
 }
 
 model SalonMember {
@@ -460,6 +465,7 @@ model Customer {
   payments       Payment[]
   reviews        Review[]
   notifications  Notification[]
+  seasonalTokens SeasonalToken[]
 
   @@unique([salonId, userId])
   @@unique([salonId, phone])
@@ -585,6 +591,7 @@ model Notification {
   id                String              @id @default(uuid())
   salonId           String?
   bookingId         String?
+  tokenId           String?
   userId            String?
   customerId        String?
   type              NotificationType
@@ -606,6 +613,7 @@ model Notification {
 
   salon    Salon?    @relation(fields: [salonId], references: [id], onDelete: Cascade)
   booking  Booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  token    SeasonalToken? @relation(fields: [tokenId], references: [id], onDelete: Cascade)
   user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
@@ -773,4 +781,120 @@ model AuditLog {
   salon Salon? @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@index([salonId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Seasonal tokens (Eid etc.)
+// ---------------------------------------------------------------------------
+//
+// For busy seasons a salon runs a queue instead of artist appointments: an event
+// (e.g. "Eid al-Adha") has daily hours and offerings (e.g. "Henna — hands"), each with
+// a token length set by the salon and a capacity (how many customers are served in
+// parallel). A customer takes a numbered token for a time and must prepay — the full
+// price or a fixed amount — before it is confirmed.
+
+enum TokenStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  ARRIVED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  /// The payment hold ran out before the customer paid.
+  EXPIRED
+}
+
+enum PrepayMode {
+  FULL
+  FIXED
+}
+
+model SeasonalEvent {
+  id            String   @id @default(uuid())
+  salonId       String
+  name          String
+  nameAr        String?
+  description   String?
+  descriptionAr String?
+  /// Salon-local dates, inclusive.
+  startDate     DateTime @db.Date
+  endDate       DateTime @db.Date
+  /// Daily window, minutes from salon-local midnight.
+  openMinute    Int
+  closeMinute   Int
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  salon     Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  offerings SeasonalOffering[]
+
+  @@index([salonId, endDate])
+}
+
+model SeasonalOffering {
+  id           String     @id @default(uuid())
+  eventId      String
+  salonId      String
+  name         String
+  nameAr       String?
+  description  String?
+  /// Length of one token, set by the salon.
+  tokenMinutes Int
+  /// Customers served at the same time (parallel chairs / artists).
+  capacity     Int        @default(1)
+  priceBaisa   Int
+  prepayMode   PrepayMode @default(FULL)
+  /// Used when prepayMode = FIXED.
+  prepayBaisa  Int        @default(0)
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
+
+  event  SeasonalEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tokens SeasonalToken[]
+
+  @@index([eventId])
+}
+
+/// One customer's place in the queue. Numbers are unique per offering and day among
+/// live tokens (partial unique index added by hand in the migration).
+model SeasonalToken {
+  id              String      @id @default(uuid())
+  reference       String      @unique
+  salonId         String
+  offeringId      String
+  customerId      String
+  /// Salon-local date of the token.
+  date            DateTime    @db.Date
+  number          Int
+  startTime       DateTime    @db.Timestamptz(3)
+  endTime         DateTime    @db.Timestamptz(3)
+  status          TokenStatus @default(PENDING_PAYMENT)
+  priceBaisa      Int
+  /// What must be paid up front to confirm.
+  prepayBaisa     Int
+  paidBaisa       Int         @default(0)
+  holdExpiresAt   DateTime?   @db.Timestamptz(3)
+  paymentProvider String?
+  paymentRef      String?     @unique
+  paidAt          DateTime?   @db.Timestamptz(3)
+  customerNotes   String?
+  arrivedAt       DateTime?   @db.Timestamptz(3)
+  completedAt     DateTime?   @db.Timestamptz(3)
+  cancelledAt     DateTime?   @db.Timestamptz(3)
+  cancelReason    String?
+  createdAt       DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(3)
+
+  salon         Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  offering      SeasonalOffering @relation(fields: [offeringId], references: [id], onDelete: Restrict)
+  customer      Customer         @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  notifications Notification[]
+
+  @@index([salonId, date])
+  @@index([offeringId, startTime])
+  @@index([status, startTime])
+  @@index([customerId])
 }

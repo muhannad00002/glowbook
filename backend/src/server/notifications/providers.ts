@@ -52,6 +52,9 @@ export const WHATSAPP_TEMPLATE_PARAMS: Partial<Record<NotificationType, string[]
   REMINDER_3H: ["customer_name", "salon_name", "service_name", "time", "staff_name"],
   BOOKING_COMPLETED: ["customer_name", "salon_name", "service_name"],
   REVIEW_REQUEST: ["customer_name", "salon_name"],
+  TOKEN_CONFIRMED: ["customer_name", "event_name", "service_name", "salon_name", "token_number", "date", "time", "booking_id", "manage_link"],
+  TOKEN_REMINDER_1H: ["customer_name", "token_number", "service_name", "salon_name", "time", "manage_link"],
+  TOKEN_CANCELLED: ["customer_name", "token_number", "service_name", "salon_name", "date", "time"],
 };
 
 export const WHATSAPP_TEMPLATE_NAMES: Partial<Record<NotificationType, string>> = {
@@ -63,6 +66,9 @@ export const WHATSAPP_TEMPLATE_NAMES: Partial<Record<NotificationType, string>> 
   REMINDER_3H: "booking_reminder_3h",
   BOOKING_COMPLETED: "booking_completed",
   REVIEW_REQUEST: "booking_completed",
+  TOKEN_CONFIRMED: "token_confirmed",
+  TOKEN_REMINDER_1H: "token_reminder_1h",
+  TOKEN_CANCELLED: "token_cancelled",
 };
 
 export class WhatsAppService implements ChannelProvider {
@@ -208,7 +214,7 @@ export class PushNotificationService implements ChannelProvider {
         message: {
           token: msg.to,
           notification: { title: msg.title, body: msg.body },
-          data: { type: msg.type, bookingId: msg.variables.booking_uuid ?? "" },
+          data: { type: msg.type, bookingId: msg.variables.booking_uuid ?? "", tokenId: msg.variables.token_uuid ?? "" },
         },
       }),
     });

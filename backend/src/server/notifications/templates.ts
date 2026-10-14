@@ -7,6 +7,7 @@ import type { NotificationType } from "@/generated/prisma/enums";
  *
  * Variables: {{customer_name}} {{salon_name}} {{service_name}} {{date}} {{time}}
  *            {{end_time}} {{staff_name}} {{booking_id}} {{manage_link}}
+ *            tokens: {{event_name}} {{token_number}}
  */
 export const DEFAULT_TEMPLATES: Record<NotificationType, Record<"en" | "ar", { title: string; body: string }>> = {
   BOOKING_CREATED: {
@@ -96,6 +97,36 @@ export const DEFAULT_TEMPLATES: Record<NotificationType, Record<"en" | "ar", { t
   PHONE_OTP: {
     en: { title: "Your code", body: "Your Glowbook code is {{code}}. It expires in 10 minutes." },
     ar: { title: "رمز التحقق", body: "رمز التحقق الخاص بك في Glowbook هو {{code}}. صالح لمدة 10 دقائق." },
+  },
+  TOKEN_CONFIRMED: {
+    en: {
+      title: "Your token is confirmed 🎟️",
+      body: "Hi {{customer_name}} 💕 Your {{event_name}} token for {{service_name}} at {{salon_name}} is confirmed: token #{{token_number}}, {{date}} at {{time}}. Ref {{booking_id}}.\nView your token: {{manage_link}}",
+    },
+    ar: {
+      title: "تم تأكيد رقمك 🎟️",
+      body: "مرحباً {{customer_name}} 💕 تم تأكيد رقمك في {{event_name}} لخدمة {{service_name}} في {{salon_name}}: الرقم {{token_number}}، يوم {{date}} الساعة {{time}}. المرجع {{booking_id}}.\nلعرض رقمك: {{manage_link}}",
+    },
+  },
+  TOKEN_REMINDER_1H: {
+    en: {
+      title: "Your turn is in 1 hour ⏰",
+      body: "Hi {{customer_name}}, token #{{token_number}} for {{service_name}} at {{salon_name}} is at {{time}} — about an hour from now. Please arrive a few minutes early so you don't miss your turn.\n{{manage_link}}",
+    },
+    ar: {
+      title: "دورك بعد ساعة ⏰",
+      body: "مرحباً {{customer_name}}، رقمك {{token_number}} لخدمة {{service_name}} في {{salon_name}} الساعة {{time}} — بعد ساعة تقريباً. يرجى الحضور قبل الموعد بدقائق حتى لا يفوتك دورك.\n{{manage_link}}",
+    },
+  },
+  TOKEN_CANCELLED: {
+    en: {
+      title: "Token cancelled",
+      body: "Hi {{customer_name}}, your token #{{token_number}} for {{service_name}} at {{salon_name}} on {{date}} at {{time}} has been cancelled. The salon will contact you about your payment.",
+    },
+    ar: {
+      title: "تم إلغاء الرقم",
+      body: "مرحباً {{customer_name}}، تم إلغاء رقمك {{token_number}} لخدمة {{service_name}} في {{salon_name}} يوم {{date}} الساعة {{time}}. سيتواصل معك الصالون بخصوص المبلغ المدفوع.",
+    },
   },
 };
 

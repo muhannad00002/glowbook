@@ -279,6 +279,65 @@ const visitCancel = await call("POST", `/api/public/bookings/${vb1?.id}/cancel?t
 const sibAfter = await call("GET", `/api/public/bookings/${vb2?.id}?token=${visit.data?.manageToken}`);
 check("cancelling the visit cancels every part", visitCancel.status === 200 && sibAfter.data?.status === "CANCELLED", visitCancel.message);
 
+console.log("Seasonal tokens");
+const season = (await call("GET", "/api/public/seasonal?salon=maison-beauty")).data ?? [];
+const eid = season[0];
+check("salon shows its seasonal event", !!eid && eid.offerings.length >= 1 && eid.dates.length >= 1, season);
+check("fixed advance shown as its amount", eid?.offerings.some((o) => o.prepayMode === "FIXED" && o.prepayBaisa === 5000 && o.priceBaisa === 15000));
+const noAdvance = await call("POST", `/api/seasonal/events/${eid?.id}/offerings`, {
+  token: ownerT,
+  body: { name: "Free henna", tokenMinutes: 15, priceBaisa: 2000, prepayMode: "FIXED", prepayBaisa: 0 },
+});
+check("an offering must take an advance", noAdvance.status === 400, noAdvance.message);
+const smokeOffer = await call("POST", `/api/seasonal/events/${eid?.id}/offerings`, {
+  token: ownerT,
+  body: { name: "Smoke henna", tokenMinutes: 15, capacity: 1, priceBaisa: 2000, prepayMode: "FULL", isActive: false },
+});
+check("admin adds an offering with its token length", smokeOffer.status === 201 && smokeOffer.data.effectivePrepayBaisa === 2000, smokeOffer.message);
+const vOffer = await call("PATCH", `/api/seasonal/offerings/${smokeOffer.data?.id}`, { token: velvet.accessToken, body: { capacity: 9 } });
+check("Salon B can't edit Salon A offering", vOffer.status === 404);
+const hidden = await call("GET", `/api/public/seasonal/offerings/${smokeOffer.data?.id}/slots?date=${eid?.dates.at(-1)}`);
+check("inactive offering takes no tokens", hidden.status === 400);
+await call("PATCH", `/api/seasonal/offerings/${smokeOffer.data?.id}`, { token: ownerT, body: { isActive: true } });
+const tokDate = eid?.dates.at(-1); // the event's last day: always in the future
+const tokSlots = (await call("GET", `/api/public/seasonal/offerings/${smokeOffer.data?.id}/slots?date=${tokDate}`)).data;
+const tokSlot = tokSlots?.slots[0];
+check("token times follow the token length", tokSlots?.slots.length > 2 && Date.parse(tokSlots.slots[1].start) - Date.parse(tokSlot.start) === 15 * 60_000 && tokSlot.left === 1 && tokSlot.firstNumber === 1, tokSlots);
+const tokPhone = randomPhone();
+const tokBody = { offeringId: smokeOffer.data?.id, startTime: tokSlot?.start, customer: { name: "Henna Guest", phone: tokPhone } };
+const tokUnverified = await call("POST", "/api/public/tokens", { body: tokBody });
+check("token without phone verification refused", tokUnverified.status === 403 && tokUnverified.data?.needsVerification === true);
+const tokPhoneToken = await verifyPhone(tokPhone);
+const held = await call("POST", "/api/public/tokens", { body: { ...tokBody, phoneToken: tokPhoneToken } });
+check("token held until paid", held.status === 201 && held.data.token.status === "PENDING_PAYMENT" && held.data.token.number === 1 && held.data.token.dueBaisa === 2000, held.message);
+const heldAgain = await call("POST", "/api/public/tokens", { body: { ...tokBody, phoneToken: tokPhoneToken } });
+check("asking again resumes the same hold", heldAgain.status === 201 && heldAgain.data.token.id === held.data?.token.id);
+const otherPhone2 = randomPhone();
+const full = await call("POST", "/api/public/tokens", { body: { ...tokBody, customer: { name: "Late Guest", phone: otherPhone2 }, phoneToken: await verifyPhone(otherPhone2) } });
+check("a full token time refuses the next customer", full.status === 409, full.message);
+const tokId = held.data?.token.id;
+const tokAccess = held.data?.accessToken;
+check("guest token link needs its signature", (await call("GET", `/api/public/tokens/${tokId}`)).status === 403);
+const tokPay = await call("POST", `/api/public/tokens/${tokId}/pay?token=${tokAccess}`, { body: {} });
+check("advance payment checkout", tokPay.status === 201 && tokPay.data.amountBaisa === 2000, tokPay.message);
+const tokPaid = await call("POST", `/api/public/tokens/${tokId}/test-confirm?token=${tokAccess}`, { body: {} });
+check("paying confirms the token", tokPaid.status === 200 && tokPaid.data.token.status === "CONFIRMED" && tokPaid.data.token.paidBaisa === 2000, tokPaid.message);
+const tokPaidAgain = await call("POST", `/api/public/tokens/${tokId}/test-confirm?token=${tokAccess}`, { body: {} });
+check("payment confirmation is idempotent", tokPaidAgain.status === 200 && tokPaidAgain.data.confirmed === false);
+const queue = await call("GET", `/api/seasonal/tokens?date=${tokDate}&offeringId=${smokeOffer.data?.id}`, { token: ownerT });
+check("front desk queue lists the token", queue.status === 200 && queue.data.tokens.some((t) => t.id === tokId && t.number === 1) && queue.data.summary.waiting >= 1);
+check("Salon B can't see the queue's token", !(await call("GET", `/api/seasonal/tokens?date=${tokDate}`, { token: velvet.accessToken })).data?.tokens.some((t) => t.id === tokId));
+const arrived = await call("POST", `/api/seasonal/tokens/${tokId}/status`, { token: ownerT, body: { status: "ARRIVED" } });
+const doneTok = await call("POST", `/api/seasonal/tokens/${tokId}/status`, { token: ownerT, body: { status: "COMPLETED" } });
+check("token moves arrived → completed", arrived.status === 200 && doneTok.status === 200 && doneTok.data.status === "COMPLETED");
+const badMove = await call("POST", `/api/seasonal/tokens/${tokId}/status`, { token: ownerT, body: { status: "NO_SHOW" } });
+check("impossible token move refused", badMove.status === 400);
+const tokNotes = await call("GET", "/api/salon/notification-log", { token: ownerT });
+check("confirmation queued over WhatsApp", tokNotes.data.items.some((n) => n.type === "TOKEN_CONFIRMED" && n.channel === "WHATSAPP"));
+const delOffer = await call("DELETE", `/api/seasonal/offerings/${smokeOffer.data?.id}`, { token: ownerT });
+check("offering with tokens can't be deleted", delOffer.status === 409);
+await call("PATCH", `/api/seasonal/offerings/${smokeOffer.data?.id}`, { token: ownerT, body: { isActive: false } });
+
 console.log("Cron, reports, notifications");
 const cronNo = await call("GET", "/api/cron/reminders");
 check("cron requires secret", cronNo.status === 401);

@@ -118,3 +118,22 @@ export async function verifyPhoneToken(token: string): Promise<string | null> {
     return null;
   }
 }
+
+/** Signed link for a guest to view a seasonal token (sent over WhatsApp). */
+export async function signSeasonalToken(tokenId: string) {
+  return new SignJWT({ typ: "seasonal" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(tokenId)
+    .setIssuedAt()
+    .setExpirationTime("120d")
+    .sign(secret());
+}
+
+export async function verifySeasonalToken(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
+    return payload.typ === "seasonal" && payload.sub ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { formatLocal } from "@/lib/time";
-import { randomToken, signBookingToken } from "@/lib/auth/tokens";
+import { randomToken, signBookingToken, signSeasonalToken } from "@/lib/auth/tokens";
 import type { Notification, Prisma } from "@/generated/prisma/client";
 import type { NotificationChannel, NotificationType } from "@/generated/prisma/enums";
 import { providers } from "./providers";
@@ -172,6 +172,105 @@ export async function notifyBookingEvent(
         title: `${titles[type] ?? "Booking update"} · ${customer.name}`,
         body: `${visit.map((v) => v.service.name).join(" + ")} · ${when} with ${b.staff.name}`,
         dedupeKey: `${keyBase}:team:${userId}`,
+      });
+    }
+  }
+
+  if (rows.length === 0) return [];
+  await db.notification.createMany({ data: rows, skipDuplicates: true });
+  const created = await db.notification.findMany({
+    where: { dedupeKey: { in: rows.map((r) => r.dedupeKey) }, status: "PENDING", attempts: 0 },
+    select: { id: true },
+  });
+  const ids = created.map((c) => c.id);
+  await deliverMany(ids);
+  return ids;
+}
+
+// ---------------------------------------------------------------------------
+// Seasonal tokens
+// ---------------------------------------------------------------------------
+
+export async function tokenLink(tokenId: string) {
+  const base = (process.env.APP_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
+  return `${base}/token/${tokenId}?token=${await signSeasonalToken(tokenId)}`;
+}
+
+export async function notifyTokenEvent(
+  tokenId: string,
+  type: "TOKEN_CONFIRMED" | "TOKEN_REMINDER_1H" | "TOKEN_CANCELLED",
+  opts: { eventKey?: string; notifySalon?: boolean } = {},
+): Promise<string[]> {
+  const t = await db.seasonalToken.findUnique({
+    where: { id: tokenId },
+    include: {
+      salon: true,
+      offering: { include: { event: { select: { name: true, nameAr: true } } } },
+      customer: { include: { user: { select: { id: true, locale: true, isActive: true } } } },
+    },
+  });
+  if (!t) return [];
+  const { salon, customer, offering } = t;
+  const locale: Locale = customer.user?.locale === "ar" ? "ar" : "en";
+  const ar = locale === "ar";
+  const vars: Record<string, string> = {
+    customer_name: customer.name.split(" ")[0],
+    salon_name: (ar && salon.nameAr) || salon.name,
+    service_name: (ar && offering.nameAr) || offering.name,
+    event_name: (ar && offering.event.nameAr) || offering.event.name,
+    token_number: String(t.number),
+    date: formatLocal(t.startTime, salon.timezone, locale, { weekday: "short", day: "numeric", month: "short" }),
+    time: formatLocal(t.startTime, salon.timezone, locale, { hour: "numeric", minute: "2-digit" }),
+    booking_id: t.reference,
+    token_uuid: t.id,
+    manage_link: await tokenLink(t.id),
+  };
+  const keyBase = `token:${t.id}:${type}${opts.eventKey ? `:${opts.eventKey}` : ""}`;
+
+  // Token messages go out whenever the customer is reachable — they paid in advance
+  // and the reminder is what gets them there on time.
+  const customerUserId = customer.user?.isActive ? customer.user.id : null;
+  const wanted: { channel: NotificationChannel; recipient: string | null; userId: string | null }[] = [];
+  if (customerUserId) wanted.push({ channel: "IN_APP", recipient: null, userId: customerUserId });
+  if (salon.notifyPush && customerUserId) wanted.push({ channel: "PUSH", recipient: customerUserId, userId: customerUserId });
+  if (customer.phone) wanted.push({ channel: "WHATSAPP", recipient: customer.phone, userId: null });
+  if (salon.notifyEmail && customer.email) wanted.push({ channel: "EMAIL", recipient: customer.email, userId: null });
+  if (salon.notifySms && customer.phone) wanted.push({ channel: "SMS", recipient: customer.phone, userId: null });
+
+  const rows: Prisma.NotificationCreateManyInput[] = [];
+  for (const w of wanted) {
+    const tpl = await loadTemplate(salon.id, type, w.channel, locale);
+    rows.push({
+      salonId: salon.id,
+      tokenId: t.id,
+      customerId: customer.id,
+      userId: w.userId,
+      type,
+      channel: w.channel,
+      recipient: w.recipient,
+      title: renderTemplate(tpl.title, vars),
+      body: renderTemplate(tpl.body, vars),
+      payload: { variables: vars, locale, whatsappTemplateName: tpl.whatsappTemplateName },
+      dedupeKey: `${keyBase}:${w.channel}`,
+    });
+  }
+  if (opts.notifySalon) {
+    const members = await db.salonMember.findMany({
+      where: { salonId: salon.id, isActive: true, role: { in: ["OWNER", "MANAGER", "RECEPTIONIST"] } },
+      select: { userId: true },
+    });
+    const when = formatLocal(t.startTime, salon.timezone, "en", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+    const label = type === "TOKEN_CANCELLED" ? "Token cancelled" : "New token";
+    for (const m of members) {
+      rows.push({
+        salonId: salon.id,
+        tokenId: t.id,
+        userId: m.userId,
+        type,
+        channel: "IN_APP",
+        title: `${label} #${t.number} · ${customer.name}`,
+        body: `${offering.name} · ${when}`,
+        dedupeKey: `${keyBase}:team:${m.userId}`,
       });
     }
   }

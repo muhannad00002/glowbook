@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { cancelBooking } from "@/server/booking/engine";
-import { notifyBookingEvent, retryFailed } from "@/server/notifications/service";
+import { notifyBookingEvent, notifyTokenEvent, retryFailed } from "@/server/notifications/service";
+import { expireTokenHolds } from "@/server/seasonal/engine";
 import { PAYMENT_HOLD_MINUTES } from "@/server/payments/service";
 
 /**
@@ -12,7 +13,7 @@ import { PAYMENT_HOLD_MINUTES } from "@/server/payments/service";
  */
 export async function runScheduledJobs(now = new Date()) {
   const H = 3600_000;
-  const result = { reminders24h: 0, reminders3h: 0, reviewRequests: 0, expiredHolds: 0, retried: 0 };
+  const result = { reminders24h: 0, reminders3h: 0, reviewRequests: 0, expiredHolds: 0, tokenReminders: 0, expiredTokenHolds: 0, retried: 0 };
 
   // 24-hour reminder: starts within the next day (but not within 3h), booked well ahead.
   const in24 = await db.booking.findMany({
@@ -83,6 +84,21 @@ export async function runScheduledJobs(now = new Date()) {
       console.error("[cron] hold expiry failed", b.id, e);
     }
   }
+
+  // Seasonal tokens: "your turn is in an hour". The window is a little over an hour so a
+  // job that runs every 15 minutes reaches every token 50–65 minutes ahead.
+  const soon = await db.seasonalToken.findMany({
+    where: { status: "CONFIRMED", startTime: { gt: now, lte: new Date(now.getTime() + 65 * 60_000) } },
+    select: { id: true, startTime: true, paidAt: true },
+    take: 500,
+  });
+  for (const t of soon) {
+    // Confirmed within the last hour before the token: the confirmation already says when.
+    if (t.paidAt && t.paidAt.getTime() > t.startTime.getTime() - 60 * 60_000) continue;
+    const ids = await notifyTokenEvent(t.id, "TOKEN_REMINDER_1H", { eventKey: t.startTime.toISOString() });
+    if (ids.length) result.tokenReminders++;
+  }
+  result.expiredTokenHolds = await expireTokenHolds(now);
 
   result.retried = await retryFailed();
   return result;

@@ -459,6 +459,35 @@ async function seedSmallSalon(opts: {
   console.log(`✓ ${opts.name}`);
 }
 
+/** A running Eid henna event at Maison Beauty, so seasonal tokens have something to show. */
+async function seedSeasonal(now: Date) {
+  const salon = await db.salon.findUnique({ where: { slug: "maison-beauty" } });
+  if (!salon) return;
+  if (await db.seasonalEvent.count({ where: { salonId: salon.id } })) return;
+  const today = localDate(now, TZ);
+  await db.seasonalEvent.create({
+    data: {
+      salonId: salon.id,
+      name: "Eid Henna Nights",
+      nameAr: "ليالي حناء العيد",
+      description: "Take a token for your Eid henna — pay in advance and skip the wait.",
+      descriptionAr: "احجزي رقمك لحناء العيد — ادفعي مسبقاً ووفّري وقت الانتظار.",
+      startDate: dateColumn(today),
+      endDate: dateColumn(addDays(today, 10)),
+      openMinute: H(10),
+      closeMinute: H(23),
+      offerings: {
+        create: [
+          { salonId: salon.id, name: "Henna — Hands", nameAr: "حناء — اليدين", tokenMinutes: 20, capacity: 3, priceBaisa: OMR(8), prepayMode: "FULL", sortOrder: 0 },
+          { salonId: salon.id, name: "Henna — Hands & Feet", nameAr: "حناء — اليدين والقدمين", tokenMinutes: 40, capacity: 2, priceBaisa: OMR(15), prepayMode: "FIXED", prepayBaisa: OMR(5), sortOrder: 1 },
+          { salonId: salon.id, name: "Kids' Henna", nameAr: "حناء الأطفال", tokenMinutes: 10, capacity: 2, priceBaisa: OMR(3), prepayMode: "FULL", sortOrder: 2 },
+        ],
+      },
+    },
+  });
+  console.log("✓ Eid Henna Nights (seasonal tokens)");
+}
+
 async function main() {
   const now = new Date();
   await seedTemplates();
@@ -476,6 +505,7 @@ async function main() {
     staff: [{ name: "Salma", nameAr: "سلمى", title: "Makeup Artist", color: "#9C5B6E" }],
     services: [{ name: "Engagement Makeup", nameAr: "مكياج خطوبة", price: 55, dur: 90 }, { name: "Party Glam", nameAr: "مكياج حفلات", price: 30, dur: 60 }],
   }, now);
+  await seedSeasonal(now);
   console.log("\nDemo logins (development only):");
   console.log("  Salon owner  owner@maisonbeauty.om / Maison#2026");
   console.log("  Reception    reception@maisonbeauty.om / Maison#2026");
