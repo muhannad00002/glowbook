@@ -100,6 +100,8 @@ class Fmt {
         'COMPLETED' => l.statusCompleted,
         'CANCELLED' => l.statusCancelled,
         'NO_SHOW' => l.statusNoShow,
+        'PENDING_PAYMENT' => l.statusAwaitingPayment,
+        'EXPIRED' => l.statusExpired,
         _ => status,
       };
 

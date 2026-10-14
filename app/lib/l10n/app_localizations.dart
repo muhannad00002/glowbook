@@ -3199,6 +3199,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Any'**
   String get anyArtistShort;
+
+  /// No description provided for @navSeasonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal tokens'**
+  String get navSeasonal;
+
+  /// No description provided for @statusAwaitingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting payment'**
+  String get statusAwaitingPayment;
+
+  /// No description provided for @statusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get statusExpired;
+
+  /// No description provided for @seasonTokensBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal tokens'**
+  String get seasonTokensBadge;
+
+  /// No description provided for @seasonTakeToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a token'**
+  String get seasonTakeToken;
+
+  /// No description provided for @seasonFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'from {price}'**
+  String seasonFrom(String price);
+
+  /// No description provided for @seasonEventOver.
+  ///
+  /// In en, this message translates to:
+  /// **'This event isn\'t taking tokens any more.'**
+  String get seasonEventOver;
+
+  /// No description provided for @seasonChooseOffering.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a service'**
+  String get seasonChooseOffering;
+
+  /// No description provided for @seasonChooseDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get seasonChooseDay;
+
+  /// No description provided for @seasonChooseTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Token time'**
+  String get seasonChooseTime;
+
+  /// No description provided for @seasonTokenLength.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} per token'**
+  String seasonTokenLength(String duration);
+
+  /// No description provided for @seasonSeatsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 left} other{{count} left}}'**
+  String seasonSeatsLeft(int count);
+
+  /// No description provided for @seasonFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get seasonFull;
+
+  /// No description provided for @seasonNoTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'No token times left on this day — try another day.'**
+  String get seasonNoTimes;
+
+  /// No description provided for @seasonPayInFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay in full to book'**
+  String get seasonPayInFull;
+
+  /// No description provided for @seasonPayAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} advance to book'**
+  String seasonPayAdvance(String amount);
+
+  /// No description provided for @seasonReminderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send your token on WhatsApp and remind you an hour before your turn.'**
+  String get seasonReminderNote;
+
+  /// No description provided for @seasonStepPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get seasonStepPay;
+
+  /// No description provided for @seasonPhoneHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Your token and its reminder are sent to this number on WhatsApp.'**
+  String get seasonPhoneHelp;
+
+  /// No description provided for @seasonDueNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due now'**
+  String get seasonDueNow;
+
+  /// No description provided for @seasonPayAtSalon.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay at the salon'**
+  String get seasonPayAtSalon;
+
+  /// No description provided for @seasonPayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay to confirm your token'**
+  String get seasonPayTitle;
+
+  /// No description provided for @seasonPayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your token is held for you. Pay in advance to confirm it — unpaid tokens are released.'**
+  String get seasonPayBody;
+
+  /// No description provided for @seasonHeldFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Held for {time}'**
+  String seasonHeldFor(String time);
+
+  /// No description provided for @seasonHoldExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This hold has expired'**
+  String get seasonHoldExpired;
+
+  /// No description provided for @seasonHoldExpiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The token was released because it wasn\'t paid in time. You can take a new one.'**
+  String get seasonHoldExpiredBody;
+
+  /// No description provided for @seasonTakeAnother.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a new token'**
+  String get seasonTakeAnother;
+
+  /// No description provided for @seasonTokenConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your token is confirmed'**
+  String get seasonTokenConfirmed;
+
+  /// No description provided for @seasonTokenConfirmedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent it to you on WhatsApp and will remind you an hour before your turn.'**
+  String get seasonTokenConfirmedBody;
+
+  /// No description provided for @seasonViewToken.
+  ///
+  /// In en, this message translates to:
+  /// **'View my token'**
+  String get seasonViewToken;
+
+  /// No description provided for @seasonMyToken.
+  ///
+  /// In en, this message translates to:
+  /// **'My token'**
+  String get seasonMyToken;
+
+  /// No description provided for @seasonTokenNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Token'**
+  String get seasonTokenNumber;
+
+  /// No description provided for @seasonArriveBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Please arrive by {time}'**
+  String seasonArriveBy(String time);
+
+  /// No description provided for @seasonCancelledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This token was cancelled. The salon will contact you about your payment.'**
+  String get seasonCancelledBody;
+
+  /// No description provided for @seasonQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue'**
+  String get seasonQueue;
+
+  /// No description provided for @seasonEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Events'**
+  String get seasonEvents;
+
+  /// No description provided for @seasonAllEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'All events'**
+  String get seasonAllEvents;
+
+  /// No description provided for @seasonWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get seasonWaiting;
+
+  /// No description provided for @seasonCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected'**
+  String get seasonCollected;
+
+  /// No description provided for @seasonNoTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'No tokens for this day yet'**
+  String get seasonNoTokens;
+
+  /// No description provided for @seasonCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in'**
+  String get seasonCheckIn;
+
+  /// No description provided for @seasonMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get seasonMarkDone;
+
+  /// No description provided for @seasonCancelToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel token'**
+  String get seasonCancelToken;
+
+  /// No description provided for @seasonCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel token #{number}? The customer is told on WhatsApp — settle any refund at the desk.'**
+  String seasonCancelConfirm(int number);
+
+  /// No description provided for @seasonPaidInFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid in full'**
+  String get seasonPaidInFull;
+
+  /// No description provided for @seasonNewEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'New event'**
+  String get seasonNewEvent;
+
+  /// No description provided for @seasonEditEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit event'**
+  String get seasonEditEvent;
+
+  /// No description provided for @seasonNoEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'No seasonal events yet'**
+  String get seasonNoEvents;
+
+  /// No description provided for @seasonNoEventsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one for Eid or any busy season. Customers take numbered tokens, pay in advance and get a reminder an hour before.'**
+  String get seasonNoEventsBody;
+
+  /// No description provided for @seasonNoOfferings.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the services customers can take tokens for.'**
+  String get seasonNoOfferings;
+
+  /// No description provided for @seasonOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get seasonOff;
+
+  /// No description provided for @seasonCapacityShort.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} at a time'**
+  String seasonCapacityShort(int count);
+
+  /// No description provided for @seasonTokensSold.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No tokens} =1{1 token} other{{count} tokens}}'**
+  String seasonTokensSold(int count);
+
+  /// No description provided for @seasonAddOffering.
+  ///
+  /// In en, this message translates to:
+  /// **'Add service'**
+  String get seasonAddOffering;
+
+  /// No description provided for @seasonEditOffering.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit service'**
+  String get seasonEditOffering;
+
+  /// No description provided for @seasonDeleteEventConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this event?'**
+  String get seasonDeleteEventConfirm;
+
+  /// No description provided for @seasonEventName.
+  ///
+  /// In en, this message translates to:
+  /// **'Event name'**
+  String get seasonEventName;
+
+  /// No description provided for @seasonEventNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Eid al-Adha henna'**
+  String get seasonEventNameHint;
+
+  /// No description provided for @seasonFirstDay.
+  ///
+  /// In en, this message translates to:
+  /// **'First day'**
+  String get seasonFirstDay;
+
+  /// No description provided for @seasonLastDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last day'**
+  String get seasonLastDay;
+
+  /// No description provided for @seasonOpens.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokens from'**
+  String get seasonOpens;
+
+  /// No description provided for @seasonCloses.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get seasonCloses;
+
+  /// No description provided for @seasonHoursInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The closing time must be after the opening time.'**
+  String get seasonHoursInvalid;
+
+  /// No description provided for @seasonActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking tokens'**
+  String get seasonActive;
+
+  /// No description provided for @seasonOfferingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Henna — hands'**
+  String get seasonOfferingHint;
+
+  /// No description provided for @seasonTokenMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Token length (min)'**
+  String get seasonTokenMinutes;
+
+  /// No description provided for @seasonCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Served at once'**
+  String get seasonCapacity;
+
+  /// No description provided for @seasonCapacityHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Chairs or artists working in parallel'**
+  String get seasonCapacityHelp;
+
+  /// No description provided for @seasonAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment to book'**
+  String get seasonAdvance;
+
+  /// No description provided for @seasonAdvanceFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full price'**
+  String get seasonAdvanceFull;
+
+  /// No description provided for @seasonAdvanceFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed amount'**
+  String get seasonAdvanceFixed;
+
+  /// No description provided for @seasonAdvanceAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance (OMR)'**
+  String get seasonAdvanceAmount;
+
+  /// No description provided for @seasonAdvanceHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers must pay this online to get a token; the rest is paid at the salon.'**
+  String get seasonAdvanceHelp;
+
+  /// No description provided for @seasonAdvanceTooHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'The advance can\'t be more than the price.'**
+  String get seasonAdvanceTooHigh;
+
+  /// No description provided for @seasonPositiveNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number above 0.'**
+  String get seasonPositiveNumber;
+
+  /// No description provided for @seasonBalanceDue.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} due'**
+  String seasonBalanceDue(String amount);
 }
 
 class _AppLocalizationsDelegate

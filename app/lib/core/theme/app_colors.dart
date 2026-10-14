@@ -121,7 +121,7 @@ class GlowColors extends ThemeExtension<GlowColors> {
   );
 
   StatusColors forStatus(String status) => switch (status) {
-        'PENDING' => pending,
+        'PENDING' || 'PENDING_PAYMENT' => pending,
         'CONFIRMED' => confirmed,
         'ARRIVED' => arrived,
         'IN_SERVICE' => inService,

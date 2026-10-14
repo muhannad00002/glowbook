@@ -756,5 +756,151 @@
   },
   "flowEnterCode": "Verification code",
   "flowVerifiedAccount": "Your number is already verified — you can confirm right away.",
-  "anyArtistShort": "Any"
+  "anyArtistShort": "Any",
+  "navSeasonal": "Seasonal tokens",
+  "statusAwaitingPayment": "Awaiting payment",
+  "statusExpired": "Expired",
+  "seasonTokensBadge": "Seasonal tokens",
+  "seasonTakeToken": "Take a token",
+  "seasonFrom": "from {price}",
+  "@seasonFrom": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "seasonEventOver": "This event isn't taking tokens any more.",
+  "seasonChooseOffering": "Choose a service",
+  "seasonChooseDay": "Day",
+  "seasonChooseTime": "Token time",
+  "seasonTokenLength": "{duration} per token",
+  "@seasonTokenLength": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "seasonSeatsLeft": "{count, plural, =1{1 left} other{{count} left}}",
+  "@seasonSeatsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seasonFull": "Full",
+  "seasonNoTimes": "No token times left on this day — try another day.",
+  "seasonPayInFull": "Pay in full to book",
+  "seasonPayAdvance": "{amount} advance to book",
+  "@seasonPayAdvance": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "seasonReminderNote": "We'll send your token on WhatsApp and remind you an hour before your turn.",
+  "seasonStepPay": "Pay",
+  "seasonPhoneHelp": "Your token and its reminder are sent to this number on WhatsApp.",
+  "seasonDueNow": "Due now",
+  "seasonPayAtSalon": "Pay at the salon",
+  "seasonPayTitle": "Pay to confirm your token",
+  "seasonPayBody": "Your token is held for you. Pay in advance to confirm it — unpaid tokens are released.",
+  "seasonHeldFor": "Held for {time}",
+  "@seasonHeldFor": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "seasonHoldExpired": "This hold has expired",
+  "seasonHoldExpiredBody": "The token was released because it wasn't paid in time. You can take a new one.",
+  "seasonTakeAnother": "Take a new token",
+  "seasonTokenConfirmed": "Your token is confirmed",
+  "seasonTokenConfirmedBody": "We've sent it to you on WhatsApp and will remind you an hour before your turn.",
+  "seasonViewToken": "View my token",
+  "seasonMyToken": "My token",
+  "seasonTokenNumber": "Token",
+  "seasonArriveBy": "Please arrive by {time}",
+  "@seasonArriveBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "seasonCancelledBody": "This token was cancelled. The salon will contact you about your payment.",
+  "seasonQueue": "Queue",
+  "seasonEvents": "Events",
+  "seasonAllEvents": "All events",
+  "seasonWaiting": "Waiting",
+  "seasonCollected": "Collected",
+  "seasonNoTokens": "No tokens for this day yet",
+  "seasonCheckIn": "Check in",
+  "seasonMarkDone": "Done",
+  "seasonCancelToken": "Cancel token",
+  "seasonCancelConfirm": "Cancel token #{number}? The customer is told on WhatsApp — settle any refund at the desk.",
+  "@seasonCancelConfirm": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "seasonPaidInFull": "Paid in full",
+  "seasonNewEvent": "New event",
+  "seasonEditEvent": "Edit event",
+  "seasonNoEvents": "No seasonal events yet",
+  "seasonNoEventsBody": "Create one for Eid or any busy season. Customers take numbered tokens, pay in advance and get a reminder an hour before.",
+  "seasonNoOfferings": "Add the services customers can take tokens for.",
+  "seasonOff": "Off",
+  "seasonCapacityShort": "{count} at a time",
+  "@seasonCapacityShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seasonTokensSold": "{count, plural, =0{No tokens} =1{1 token} other{{count} tokens}}",
+  "@seasonTokensSold": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seasonAddOffering": "Add service",
+  "seasonEditOffering": "Edit service",
+  "seasonDeleteEventConfirm": "Delete this event?",
+  "seasonEventName": "Event name",
+  "seasonEventNameHint": "e.g. Eid al-Adha henna",
+  "seasonFirstDay": "First day",
+  "seasonLastDay": "Last day",
+  "seasonOpens": "Tokens from",
+  "seasonCloses": "Until",
+  "seasonHoursInvalid": "The closing time must be after the opening time.",
+  "seasonActive": "Taking tokens",
+  "seasonOfferingHint": "e.g. Henna — hands",
+  "seasonTokenMinutes": "Token length (min)",
+  "seasonCapacity": "Served at once",
+  "seasonCapacityHelp": "Chairs or artists working in parallel",
+  "seasonAdvance": "Payment to book",
+  "seasonAdvanceFull": "Full price",
+  "seasonAdvanceFixed": "Fixed amount",
+  "seasonAdvanceAmount": "Advance (OMR)",
+  "seasonAdvanceHelp": "Customers must pay this online to get a token; the rest is paid at the salon.",
+  "seasonAdvanceTooHigh": "The advance can't be more than the price.",
+  "seasonPositiveNumber": "Enter a number above 0.",
+  "seasonBalanceDue": "{amount} due",
+  "@seasonBalanceDue": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

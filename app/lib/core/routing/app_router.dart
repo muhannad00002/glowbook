@@ -18,6 +18,9 @@ import '../../features/reports/presentation/reports_screen.dart';
 import '../../features/salon/presentation/discover_screen.dart';
 import '../../features/salon/presentation/salon_page_screen.dart';
 import '../../features/salon/presentation/salon_reviews_screen.dart';
+import '../../features/seasonal/presentation/seasonal_admin_screen.dart';
+import '../../features/seasonal/presentation/token_flow_screen.dart';
+import '../../features/seasonal/presentation/token_screen.dart';
 import '../../features/services/presentation/services_screens.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/staff/presentation/staff_screens.dart';
@@ -37,7 +40,7 @@ String homeFor(Session s) => switch (s.me.homeRole) {
 
 const _authPaths = ['/login', '/register', '/register-salon', '/forgot-password', '/phone-login'];
 bool _isPublic(String p) =>
-    p.startsWith('/salon/') || p.startsWith('/booking/') || p.startsWith('/reset-password') || p == '/discover';
+    p.startsWith('/salon/') || p.startsWith('/booking/') || p.startsWith('/token/') || p.startsWith('/reset-password') || p == '/discover';
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever auth changes, without rebuilding the router.
@@ -98,7 +101,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'book',
             pageBuilder: (_, s) => AnimatedPageTransition.rise(s, BookingFlowScreen(slug: s.pathParameters['slug']!, serviceId: s.uri.queryParameters['service'])),
           ),
+          GoRoute(
+            path: 'tokens/:eventId',
+            pageBuilder: (_, s) => AnimatedPageTransition.rise(s, TokenFlowScreen(slug: s.pathParameters['slug']!, eventId: s.pathParameters['eventId']!)),
+          ),
         ],
+      ),
+      GoRoute(
+        path: '/token/:id',
+        pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, TokenScreen(id: s.pathParameters['id']!, access: s.uri.queryParameters['token'])),
       ),
       GoRoute(
         path: '/booking/:id',
@@ -145,6 +156,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/admin/team', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const StaffScreen())),
           GoRoute(path: '/admin/team/:id', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, StaffFormScreen(id: s.pathParameters['id']))),
           GoRoute(path: '/admin/payments', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const PaymentsScreen())),
+          GoRoute(path: '/admin/seasonal', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const SeasonalAdminScreen())),
           GoRoute(path: '/admin/reports', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const ReportsScreen())),
           GoRoute(path: '/admin/reviews', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const SalonReviewsScreen())),
           GoRoute(path: '/admin/inbox', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const NotificationsScreen())),

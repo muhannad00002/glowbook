@@ -1682,4 +1682,277 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get anyArtistShort => 'Any';
+
+  @override
+  String get navSeasonal => 'Seasonal tokens';
+
+  @override
+  String get statusAwaitingPayment => 'Awaiting payment';
+
+  @override
+  String get statusExpired => 'Expired';
+
+  @override
+  String get seasonTokensBadge => 'Seasonal tokens';
+
+  @override
+  String get seasonTakeToken => 'Take a token';
+
+  @override
+  String seasonFrom(String price) {
+    return 'from $price';
+  }
+
+  @override
+  String get seasonEventOver => 'This event isn\'t taking tokens any more.';
+
+  @override
+  String get seasonChooseOffering => 'Choose a service';
+
+  @override
+  String get seasonChooseDay => 'Day';
+
+  @override
+  String get seasonChooseTime => 'Token time';
+
+  @override
+  String seasonTokenLength(String duration) {
+    return '$duration per token';
+  }
+
+  @override
+  String seasonSeatsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count left',
+      one: '1 left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seasonFull => 'Full';
+
+  @override
+  String get seasonNoTimes =>
+      'No token times left on this day — try another day.';
+
+  @override
+  String get seasonPayInFull => 'Pay in full to book';
+
+  @override
+  String seasonPayAdvance(String amount) {
+    return '$amount advance to book';
+  }
+
+  @override
+  String get seasonReminderNote =>
+      'We\'ll send your token on WhatsApp and remind you an hour before your turn.';
+
+  @override
+  String get seasonStepPay => 'Pay';
+
+  @override
+  String get seasonPhoneHelp =>
+      'Your token and its reminder are sent to this number on WhatsApp.';
+
+  @override
+  String get seasonDueNow => 'Due now';
+
+  @override
+  String get seasonPayAtSalon => 'Pay at the salon';
+
+  @override
+  String get seasonPayTitle => 'Pay to confirm your token';
+
+  @override
+  String get seasonPayBody =>
+      'Your token is held for you. Pay in advance to confirm it — unpaid tokens are released.';
+
+  @override
+  String seasonHeldFor(String time) {
+    return 'Held for $time';
+  }
+
+  @override
+  String get seasonHoldExpired => 'This hold has expired';
+
+  @override
+  String get seasonHoldExpiredBody =>
+      'The token was released because it wasn\'t paid in time. You can take a new one.';
+
+  @override
+  String get seasonTakeAnother => 'Take a new token';
+
+  @override
+  String get seasonTokenConfirmed => 'Your token is confirmed';
+
+  @override
+  String get seasonTokenConfirmedBody =>
+      'We\'ve sent it to you on WhatsApp and will remind you an hour before your turn.';
+
+  @override
+  String get seasonViewToken => 'View my token';
+
+  @override
+  String get seasonMyToken => 'My token';
+
+  @override
+  String get seasonTokenNumber => 'Token';
+
+  @override
+  String seasonArriveBy(String time) {
+    return 'Please arrive by $time';
+  }
+
+  @override
+  String get seasonCancelledBody =>
+      'This token was cancelled. The salon will contact you about your payment.';
+
+  @override
+  String get seasonQueue => 'Queue';
+
+  @override
+  String get seasonEvents => 'Events';
+
+  @override
+  String get seasonAllEvents => 'All events';
+
+  @override
+  String get seasonWaiting => 'Waiting';
+
+  @override
+  String get seasonCollected => 'Collected';
+
+  @override
+  String get seasonNoTokens => 'No tokens for this day yet';
+
+  @override
+  String get seasonCheckIn => 'Check in';
+
+  @override
+  String get seasonMarkDone => 'Done';
+
+  @override
+  String get seasonCancelToken => 'Cancel token';
+
+  @override
+  String seasonCancelConfirm(int number) {
+    return 'Cancel token #$number? The customer is told on WhatsApp — settle any refund at the desk.';
+  }
+
+  @override
+  String get seasonPaidInFull => 'Paid in full';
+
+  @override
+  String get seasonNewEvent => 'New event';
+
+  @override
+  String get seasonEditEvent => 'Edit event';
+
+  @override
+  String get seasonNoEvents => 'No seasonal events yet';
+
+  @override
+  String get seasonNoEventsBody =>
+      'Create one for Eid or any busy season. Customers take numbered tokens, pay in advance and get a reminder an hour before.';
+
+  @override
+  String get seasonNoOfferings =>
+      'Add the services customers can take tokens for.';
+
+  @override
+  String get seasonOff => 'Off';
+
+  @override
+  String seasonCapacityShort(int count) {
+    return '$count at a time';
+  }
+
+  @override
+  String seasonTokensSold(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tokens',
+      one: '1 token',
+      zero: 'No tokens',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seasonAddOffering => 'Add service';
+
+  @override
+  String get seasonEditOffering => 'Edit service';
+
+  @override
+  String get seasonDeleteEventConfirm => 'Delete this event?';
+
+  @override
+  String get seasonEventName => 'Event name';
+
+  @override
+  String get seasonEventNameHint => 'e.g. Eid al-Adha henna';
+
+  @override
+  String get seasonFirstDay => 'First day';
+
+  @override
+  String get seasonLastDay => 'Last day';
+
+  @override
+  String get seasonOpens => 'Tokens from';
+
+  @override
+  String get seasonCloses => 'Until';
+
+  @override
+  String get seasonHoursInvalid =>
+      'The closing time must be after the opening time.';
+
+  @override
+  String get seasonActive => 'Taking tokens';
+
+  @override
+  String get seasonOfferingHint => 'e.g. Henna — hands';
+
+  @override
+  String get seasonTokenMinutes => 'Token length (min)';
+
+  @override
+  String get seasonCapacity => 'Served at once';
+
+  @override
+  String get seasonCapacityHelp => 'Chairs or artists working in parallel';
+
+  @override
+  String get seasonAdvance => 'Payment to book';
+
+  @override
+  String get seasonAdvanceFull => 'Full price';
+
+  @override
+  String get seasonAdvanceFixed => 'Fixed amount';
+
+  @override
+  String get seasonAdvanceAmount => 'Advance (OMR)';
+
+  @override
+  String get seasonAdvanceHelp =>
+      'Customers must pay this online to get a token; the rest is paid at the salon.';
+
+  @override
+  String get seasonAdvanceTooHigh =>
+      'The advance can\'t be more than the price.';
+
+  @override
+  String get seasonPositiveNumber => 'Enter a number above 0.';
+
+  @override
+  String seasonBalanceDue(String amount) {
+    return '$amount due';
+  }
 }

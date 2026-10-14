@@ -14,6 +14,8 @@ import '../../../shared/animations/staggered_entrance.dart';
 import '../../../shared/models/models.dart';
 import '../../../shared/widgets/common.dart';
 import '../../../shared/widgets/salon_cover.dart';
+import '../../seasonal/data/seasonal_repository.dart';
+import '../../seasonal/presentation/token_widgets.dart';
 import '../data/salon_repository.dart';
 
 /// Public salon page — the shareable booking link (/salon/maison-beauty).
@@ -123,6 +125,8 @@ class _SalonBodyState extends ConsumerState<_SalonBody> {
       ],
     );
 
+    final seasonal = ref.watch(salonSeasonalEventsProvider(p.card.slug)).valueOrNull ?? const <SeasonalEvent>[];
+    final banners = Column(children: [for (final e in seasonal) SeasonalBanner(slug: p.card.slug, event: e)]);
     final services = _ServicesBlock(profile: p, onBook: book);
     final side = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -257,11 +261,11 @@ class _SalonBodyState extends ConsumerState<_SalonBody> {
                 child: ContentWidth(
                   child: wide
                       ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [header, const SizedBox(height: Space.xl), services, reviews])),
+                          Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [header, const SizedBox(height: Space.xl), banners, services, reviews])),
                           const SizedBox(width: Space.xxl),
                           Expanded(flex: 2, child: side),
                         ])
-                      : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [header, const SizedBox(height: Space.xl), services, side, reviews]),
+                      : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [header, const SizedBox(height: Space.xl), banners, services, side, reviews]),
                 ),
               ),
             ),

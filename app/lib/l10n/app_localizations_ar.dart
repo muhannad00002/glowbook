@@ -1682,4 +1682,273 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get anyArtistShort => 'أي فنانة';
+
+  @override
+  String get navSeasonal => 'أرقام المواسم';
+
+  @override
+  String get statusAwaitingPayment => 'بانتظار الدفع';
+
+  @override
+  String get statusExpired => 'منتهي';
+
+  @override
+  String get seasonTokensBadge => 'أرقام المواسم';
+
+  @override
+  String get seasonTakeToken => 'احجزي رقمك';
+
+  @override
+  String seasonFrom(String price) {
+    return 'ابتداءً من $price';
+  }
+
+  @override
+  String get seasonEventOver => 'انتهى الحجز في هذه المناسبة.';
+
+  @override
+  String get seasonChooseOffering => 'اختاري الخدمة';
+
+  @override
+  String get seasonChooseDay => 'اليوم';
+
+  @override
+  String get seasonChooseTime => 'وقت الرقم';
+
+  @override
+  String seasonTokenLength(String duration) {
+    return '$duration لكل رقم';
+  }
+
+  @override
+  String seasonSeatsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'متبقي $count',
+      one: 'متبقي 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seasonFull => 'مكتمل';
+
+  @override
+  String get seasonNoTimes =>
+      'لا توجد أوقات متاحة في هذا اليوم — جرّبي يوماً آخر.';
+
+  @override
+  String get seasonPayInFull => 'الدفع كاملاً عند الحجز';
+
+  @override
+  String seasonPayAdvance(String amount) {
+    return 'دفعة مقدمة $amount للحجز';
+  }
+
+  @override
+  String get seasonReminderNote =>
+      'سنرسل رقمك عبر واتساب ونذكّرك قبل دورك بساعة.';
+
+  @override
+  String get seasonStepPay => 'الدفع';
+
+  @override
+  String get seasonPhoneHelp => 'يُرسل رقمك والتذكير إلى هذا الرقم عبر واتساب.';
+
+  @override
+  String get seasonDueNow => 'المطلوب الآن';
+
+  @override
+  String get seasonPayAtSalon => 'يُدفع في الصالون';
+
+  @override
+  String get seasonPayTitle => 'ادفعي لتأكيد رقمك';
+
+  @override
+  String get seasonPayBody =>
+      'رقمك محجوز لك مؤقتاً. ادفعي مقدماً لتأكيده — تُلغى الأرقام غير المدفوعة.';
+
+  @override
+  String seasonHeldFor(String time) {
+    return 'محجوز لمدة $time';
+  }
+
+  @override
+  String get seasonHoldExpired => 'انتهت مدة الحجز المؤقت';
+
+  @override
+  String get seasonHoldExpiredBody =>
+      'تم إلغاء الرقم لعدم الدفع في الوقت المحدد. يمكنك حجز رقم جديد.';
+
+  @override
+  String get seasonTakeAnother => 'احجزي رقماً جديداً';
+
+  @override
+  String get seasonTokenConfirmed => 'تم تأكيد رقمك';
+
+  @override
+  String get seasonTokenConfirmedBody =>
+      'أرسلناه لك عبر واتساب وسنذكّرك قبل دورك بساعة.';
+
+  @override
+  String get seasonViewToken => 'عرض رقمي';
+
+  @override
+  String get seasonMyToken => 'رقمي';
+
+  @override
+  String get seasonTokenNumber => 'رقم';
+
+  @override
+  String seasonArriveBy(String time) {
+    return 'يرجى الحضور قبل $time';
+  }
+
+  @override
+  String get seasonCancelledBody =>
+      'تم إلغاء هذا الرقم. سيتواصل معك الصالون بخصوص المبلغ المدفوع.';
+
+  @override
+  String get seasonQueue => 'الطابور';
+
+  @override
+  String get seasonEvents => 'المناسبات';
+
+  @override
+  String get seasonAllEvents => 'كل المناسبات';
+
+  @override
+  String get seasonWaiting => 'بالانتظار';
+
+  @override
+  String get seasonCollected => 'المحصّل';
+
+  @override
+  String get seasonNoTokens => 'لا توجد أرقام لهذا اليوم بعد';
+
+  @override
+  String get seasonCheckIn => 'حضرت';
+
+  @override
+  String get seasonMarkDone => 'تم';
+
+  @override
+  String get seasonCancelToken => 'إلغاء الرقم';
+
+  @override
+  String seasonCancelConfirm(int number) {
+    return 'إلغاء الرقم $number؟ سيتم إبلاغ العميلة عبر واتساب، وتتم تسوية أي استرداد في الصالون.';
+  }
+
+  @override
+  String get seasonPaidInFull => 'مدفوع بالكامل';
+
+  @override
+  String get seasonNewEvent => 'مناسبة جديدة';
+
+  @override
+  String get seasonEditEvent => 'تعديل المناسبة';
+
+  @override
+  String get seasonNoEvents => 'لا توجد مناسبات بعد';
+
+  @override
+  String get seasonNoEventsBody =>
+      'أنشئي مناسبة للعيد أو أي موسم مزدحم. تحجز العميلات أرقاماً مسبقة الدفع وتصلهن رسالة تذكير قبل الموعد بساعة.';
+
+  @override
+  String get seasonNoOfferings => 'أضيفي الخدمات التي يمكن حجز أرقام لها.';
+
+  @override
+  String get seasonOff => 'متوقف';
+
+  @override
+  String seasonCapacityShort(int count) {
+    return '$count في نفس الوقت';
+  }
+
+  @override
+  String seasonTokensSold(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count رقم',
+      one: 'رقم واحد',
+      zero: 'لا أرقام',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seasonAddOffering => 'إضافة خدمة';
+
+  @override
+  String get seasonEditOffering => 'تعديل الخدمة';
+
+  @override
+  String get seasonDeleteEventConfirm => 'حذف هذه المناسبة؟';
+
+  @override
+  String get seasonEventName => 'اسم المناسبة';
+
+  @override
+  String get seasonEventNameHint => 'مثال: حناء عيد الأضحى';
+
+  @override
+  String get seasonFirstDay => 'أول يوم';
+
+  @override
+  String get seasonLastDay => 'آخر يوم';
+
+  @override
+  String get seasonOpens => 'الأرقام من';
+
+  @override
+  String get seasonCloses => 'حتى';
+
+  @override
+  String get seasonHoursInvalid => 'يجب أن يكون وقت الانتهاء بعد وقت البدء.';
+
+  @override
+  String get seasonActive => 'متاح للحجز';
+
+  @override
+  String get seasonOfferingHint => 'مثال: حناء — اليدين';
+
+  @override
+  String get seasonTokenMinutes => 'مدة الرقم (دقيقة)';
+
+  @override
+  String get seasonCapacity => 'عدد العميلات معاً';
+
+  @override
+  String get seasonCapacityHelp => 'عدد الكراسي أو الفنانات في نفس الوقت';
+
+  @override
+  String get seasonAdvance => 'الدفع عند الحجز';
+
+  @override
+  String get seasonAdvanceFull => 'السعر كاملاً';
+
+  @override
+  String get seasonAdvanceFixed => 'مبلغ محدد';
+
+  @override
+  String get seasonAdvanceAmount => 'الدفعة المقدمة (ر.ع)';
+
+  @override
+  String get seasonAdvanceHelp =>
+      'تدفع العميلة هذا المبلغ إلكترونياً للحصول على الرقم، والباقي في الصالون.';
+
+  @override
+  String get seasonAdvanceTooHigh => 'لا يمكن أن تتجاوز الدفعة المقدمة السعر.';
+
+  @override
+  String get seasonPositiveNumber => 'أدخلي رقماً أكبر من 0.';
+
+  @override
+  String seasonBalanceDue(String amount) {
+    return 'متبقي $amount';
+  }
 }

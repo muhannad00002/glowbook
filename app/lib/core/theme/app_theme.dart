@@ -94,6 +94,9 @@ abstract final class AppTheme {
 
   static TextTheme _text(Locale locale, Color ink, Color muted) {
     final ar = _isArabic(locale);
+    // Arabic text still turns up in the English UI (names, Arabic fields); without an
+    // explicit fallback the web build shows boxes until it fetches a font on its own.
+    final arabicFallback = ar ? null : [GoogleFonts.ibmPlexSansArabic().fontFamily!];
     TextStyle display(double size, FontWeight w, {double h = 1.15}) =>
         (ar ? GoogleFonts.notoNaskhArabic : GoogleFonts.playfairDisplay)(
           fontSize: size,
@@ -101,7 +104,7 @@ abstract final class AppTheme {
           height: ar ? h + 0.25 : h,
           color: ink,
           letterSpacing: ar ? 0 : -0.3,
-        );
+        ).copyWith(fontFamilyFallback: arabicFallback);
     TextStyle body(double size, FontWeight w, {Color? color, double h = 1.45, double ls = 0}) =>
         (ar ? GoogleFonts.ibmPlexSansArabic : GoogleFonts.inter)(
           fontSize: size,
@@ -109,7 +112,7 @@ abstract final class AppTheme {
           height: ar ? h + 0.15 : h,
           color: color ?? ink,
           letterSpacing: ar ? 0 : ls,
-        );
+        ).copyWith(fontFamilyFallback: arabicFallback);
 
     return TextTheme(
       displayLarge: display(44, FontWeight.w600),

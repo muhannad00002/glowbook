@@ -53,6 +53,7 @@ class AdminShell extends ConsumerWidget {
       ShellDestination(path: '/admin/services', icon: Icons.spa_outlined, selectedIcon: Icons.spa_rounded, label: l.navServices, primary: false),
       ShellDestination(path: '/admin/team', icon: Icons.badge_outlined, selectedIcon: Icons.badge_rounded, label: l.navStaff, primary: false),
       ShellDestination(path: '/admin/payments', icon: Icons.payments_outlined, selectedIcon: Icons.payments_rounded, label: l.navPayments, primary: false),
+      ShellDestination(path: '/admin/seasonal', icon: Icons.confirmation_number_outlined, selectedIcon: Icons.confirmation_number_rounded, label: l.navSeasonal, primary: false),
       if (admin) ShellDestination(path: '/admin/reports', icon: Icons.insights_outlined, selectedIcon: Icons.insights_rounded, label: l.navReports, primary: false),
       ShellDestination(path: '/admin/reviews', icon: Icons.star_outline_rounded, selectedIcon: Icons.star_rounded, label: l.navReviews, primary: false),
       ShellDestination(path: '/admin/settings', icon: Icons.settings_outlined, selectedIcon: Icons.settings_rounded, label: l.navSettings, primary: false),

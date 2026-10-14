@@ -58,6 +58,8 @@ class StatusChip extends StatelessWidget {
         'COMPLETED' => Icons.favorite_rounded,
         'CANCELLED' => Icons.close_rounded,
         'NO_SHOW' => Icons.event_busy_outlined,
+        'PENDING_PAYMENT' => Icons.lock_clock_outlined,
+        'EXPIRED' => Icons.timer_off_outlined,
         _ => Icons.circle_outlined,
       };
 

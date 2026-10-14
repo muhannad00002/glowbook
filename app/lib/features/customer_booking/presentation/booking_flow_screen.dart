@@ -1060,7 +1060,7 @@ class _VerifyStep extends StatelessWidget {
                   style: context.text.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
                 ),
                 const SizedBox(height: Space.xl),
-                _CodeInput(controller: code),
+                OtpCodeInput(controller: code),
                 if (draft.testCode != null) ...[
                   const SizedBox(height: Space.lg),
                   PressableScale(
@@ -1101,14 +1101,14 @@ class _VerifyStep extends StatelessWidget {
 
 /// Six boxes over one real text field — so iOS can autofill the SMS code
 /// ("From Messages") and paste works.
-class _CodeInput extends StatefulWidget {
-  const _CodeInput({required this.controller});
+class OtpCodeInput extends StatefulWidget {
+  const OtpCodeInput({super.key, required this.controller});
   final TextEditingController controller;
   @override
-  State<_CodeInput> createState() => _CodeInputState();
+  State<OtpCodeInput> createState() => _OtpCodeInputState();
 }
 
-class _CodeInputState extends State<_CodeInput> {
+class _OtpCodeInputState extends State<OtpCodeInput> {
   final _focus = FocusNode();
 
   @override
