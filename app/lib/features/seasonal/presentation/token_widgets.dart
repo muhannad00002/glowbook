@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/constants/env.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/format.dart';
@@ -203,6 +205,44 @@ class SeasonalBanner extends StatelessWidget {
           Text(l.seasonTakeToken, style: context.text.labelLarge?.copyWith(color: context.colors.primary)),
           Icon(Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded, color: context.colors.primary),
         ],
+      ),
+    );
+  }
+}
+
+/// "Add to Apple Wallet". Opens the signed pass from the API; Safari on iPhone hands it
+/// straight to Wallet. Shown only when the salon has Wallet set up and the token is paid.
+class AddToWalletButton extends StatelessWidget {
+  const AddToWalletButton({super.key, required this.token, required this.access});
+  final SeasonalToken token;
+  final String? access;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!token.walletAvailable) return const SizedBox.shrink();
+    final l = context.l10n;
+    final uri = Uri.parse('${Env.apiBaseUrl}/api/public/tokens/${token.id}/wallet').replace(queryParameters: {'token': ?access, 'lang': context.lang});
+    return Semantics(
+      button: true,
+      label: l.walletAdd,
+      child: Material(
+        color: Colors.black,
+        shape: const StadiumBorder(),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: () => launchUrl(uri, webOnlyWindowName: '_self'),
+          child: SizedBox(
+            height: 50,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.wallet_rounded, color: Colors.white, size: 22),
+                const SizedBox(width: Space.sm),
+                Text(l.walletAdd, style: context.text.labelLarge?.copyWith(color: Colors.white)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

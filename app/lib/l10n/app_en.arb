@@ -932,5 +932,6 @@
   "manageTooLate": "It's too close to your appointment to change it online — please call the salon.",
   "manageBookAgain": "Book again",
   "manageNowAt": "Now:",
-  "homeHours": "Hours"
+  "homeHours": "Hours",
+  "walletAdd": "Add to Apple Wallet"
 }

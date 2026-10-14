@@ -612,5 +612,6 @@
   "manageTooLate": "اقترب موعدك ولا يمكن تغييره عبر الإنترنت — يرجى الاتصال بالصالون.",
   "manageBookAgain": "احجزي مجدداً",
   "manageNowAt": "الموعد الحالي:",
-  "homeHours": "المواعيد"
+  "homeHours": "المواعيد",
+  "walletAdd": "إضافة إلى Apple Wallet"
 }

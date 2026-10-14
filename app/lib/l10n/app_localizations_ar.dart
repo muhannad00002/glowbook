@@ -2017,4 +2017,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeHours => 'المواعيد';
+
+  @override
+  String get walletAdd => 'إضافة إلى Apple Wallet';
 }

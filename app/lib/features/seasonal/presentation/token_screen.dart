@@ -130,6 +130,8 @@ class _Body extends ConsumerWidget {
                 if (context.mounted) showGlowSnack(context, l.seasonTokenConfirmed);
               }),
             )
+          : token.walletAvailable
+          ? AddToWalletButton(token: token, access: access)
           : expired
           ? FilledButton.icon(onPressed: () => context.go('/'), icon: const Icon(Icons.refresh_rounded), label: Text(l.seasonTakeAnother))
           : null,

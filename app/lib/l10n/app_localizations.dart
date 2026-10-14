@@ -3775,6 +3775,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hours'**
   String get homeHours;
+
+  /// No description provided for @walletAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Apple Wallet'**
+  String get walletAdd;
 }
 
 class _AppLocalizationsDelegate

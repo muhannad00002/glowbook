@@ -2023,4 +2023,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeHours => 'Hours';
+
+  @override
+  String get walletAdd => 'Add to Apple Wallet';
 }

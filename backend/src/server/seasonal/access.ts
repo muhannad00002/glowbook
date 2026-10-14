@@ -4,6 +4,7 @@ import type { AuthUser } from "@/lib/auth/context";
 import { verifyPhoneToken, verifySeasonalToken } from "@/lib/auth/tokens";
 import { salonCardSelect } from "@/server/dto";
 import { prepayFor } from "./engine";
+import { WALLET_STATUSES, walletConfigured } from "./wallet";
 
 /** The phone a customer has just proven she owns (one-time-code token). Throws unless it is `phone`. */
 export async function requireVerifiedPhone(phone: string, phoneToken?: string) {
@@ -62,6 +63,8 @@ export async function loadCustomerToken(id: string, who: { user?: AuthUser | nul
     customer: { name: customer.name, phone: customer.phone },
     dueBaisa: holdActive ? Math.max(0, token.prepayBaisa - token.paidBaisa) : 0,
     balanceBaisa: Math.max(0, token.priceBaisa - token.paidBaisa),
+    /** "Add to Apple Wallet" is offered once the token is paid and Wallet is set up. */
+    walletAvailable: walletConfigured() && WALLET_STATUSES.includes(token.status),
   };
 }
 

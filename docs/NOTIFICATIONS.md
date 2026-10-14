@@ -44,14 +44,22 @@ Salon admins toggle each channel (and the 24h / 3h reminders and review requests
 
 Register each in English (`en`) and Arabic (`ar`). Body parameters, in order:
 
-| Template | Parameters |
-|---|---|
-| `booking_confirmation` | customer_name, salon_name, service_name, date, time, staff_name, booking_id |
-| `booking_reminder_24h` | customer_name, salon_name, service_name, date, time, staff_name |
-| `booking_reminder_3h` | customer_name, salon_name, service_name, time, staff_name |
-| `booking_cancelled` | customer_name, salon_name, service_name, date, time, booking_id |
-| `booking_rescheduled` | customer_name, salon_name, service_name, date, time, booking_id |
-| `booking_completed` | customer_name, salon_name, service_name |
+| Template | Type | Parameters |
+|---|---|---|
+| `booking_received` | BOOKING_CREATED | customer_name, salon_name, service_name, date, time, booking_id, manage_link |
+| `booking_confirmation` | BOOKING_CONFIRMED | customer_name, salon_name, service_name, date, time, staff_name, booking_id, manage_link |
+| `booking_rescheduled` | BOOKING_RESCHEDULED | customer_name, salon_name, service_name, date, time, booking_id, manage_link |
+| `booking_cancelled` | BOOKING_CANCELLED | customer_name, salon_name, service_name, date, time, booking_id |
+| `booking_reminder_24h` | REMINDER_24H | customer_name, salon_name, service_name, date, time, staff_name, manage_link |
+| `booking_reminder_3h` | REMINDER_3H | customer_name, salon_name, service_name, time, staff_name |
+| `booking_completed` | BOOKING_COMPLETED | customer_name, salon_name, service_name |
+| `review_request` | REVIEW_REQUEST | customer_name, salon_name |
+| `token_confirmed` | TOKEN_CONFIRMED | customer_name, event_name, service_name, salon_name, token_number, date, time, booking_id, manage_link |
+| `token_reminder_1h` | TOKEN_REMINDER_1H | customer_name, token_number, service_name, salon_name, time, manage_link |
+| `token_cancelled` | TOKEN_CANCELLED | customer_name, token_number, service_name, salon_name, date, time |
+
+`manage_link` is the customer's temporary link (no accounts): it opens her booking or token and
+stops working a day after the appointment.
 
 Example body (`booking_confirmation`, en):
 `Hi {{1}} 💕 Your appointment at {{2}} is confirmed: {{3}} on {{4}} at {{5}} with {{6}}. Ref {{7}}.`

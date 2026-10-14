@@ -328,6 +328,10 @@ const tokPay = await call("POST", `/api/public/tokens/${tokId}/pay?token=${tokAc
 check("advance payment checkout", tokPay.status === 201 && tokPay.data.amountBaisa === 2000, tokPay.message);
 const tokPaid = await call("POST", `/api/public/tokens/${tokId}/test-confirm?token=${tokAccess}`, { body: {} });
 check("paying confirms the token", tokPaid.status === 200 && tokPaid.data.token.status === "CONFIRMED" && tokPaid.data.token.paidBaisa === 2000, tokPaid.message);
+// Apple Wallet stays hidden until the salon's pass certificate is configured.
+const wallet = await call("GET", `/api/public/tokens/${tokId}/wallet?token=${tokAccess}`);
+check("Wallet pass needs the salon's certificate", tokPaid.data?.token.walletAvailable === false && wallet.status === 400, wallet.message);
+check("Wallet pass needs the link signature", (await call("GET", `/api/public/tokens/${tokId}/wallet`)).status === 403);
 const tokPaidAgain = await call("POST", `/api/public/tokens/${tokId}/test-confirm?token=${tokAccess}`, { body: {} });
 check("payment confirmation is idempotent", tokPaidAgain.status === 200 && tokPaidAgain.data.confirmed === false);
 const queue = await call("GET", `/api/seasonal/tokens?date=${tokDate}&offeringId=${smokeOffer.data?.id}`, { token: ownerT });

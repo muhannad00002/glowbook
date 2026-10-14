@@ -521,6 +521,7 @@ class _Confirmed extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: Space.md),
+                if (token.walletAvailable) ...[AddToWalletButton(token: token, access: access), const SizedBox(height: Space.sm)],
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(onPressed: () => context.go('/token/${token.id}?token=$access'), child: Text(l.seasonViewToken)),

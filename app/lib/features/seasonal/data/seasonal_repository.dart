@@ -155,6 +155,7 @@ class SeasonalToken {
     this.salonPhone,
     this.salonAddress,
     this.customerName,
+    this.walletAvailable = false,
   });
   final String id;
   final String reference;
@@ -179,6 +180,9 @@ class SeasonalToken {
   final String? salonPhone;
   final String? salonAddress;
   final String? customerName;
+
+  /// The salon has Apple Wallet set up and this token is paid.
+  final bool walletAvailable;
 
   bool get awaitingPayment => status == 'PENDING_PAYMENT';
   bool get isLive => const ['PENDING_PAYMENT', 'CONFIRMED', 'ARRIVED'].contains(status);
@@ -211,6 +215,7 @@ class SeasonalToken {
       salonPhone: asStr(salon['phone']),
       salonAddress: asStr(salon['address']),
       customerName: asStr(asJson(j['customer'])['name']),
+      walletAvailable: j['walletAvailable'] == true,
     );
   }
 }
