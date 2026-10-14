@@ -58,14 +58,14 @@ export const WHATSAPP_TEMPLATE_PARAMS: Partial<Record<NotificationType, string[]
 };
 
 export const WHATSAPP_TEMPLATE_NAMES: Partial<Record<NotificationType, string>> = {
-  BOOKING_CREATED: "booking_confirmation",
+  BOOKING_CREATED: "booking_received",
   BOOKING_CONFIRMED: "booking_confirmation",
   BOOKING_RESCHEDULED: "booking_rescheduled",
   BOOKING_CANCELLED: "booking_cancelled",
   REMINDER_24H: "booking_reminder_24h",
   REMINDER_3H: "booking_reminder_3h",
   BOOKING_COMPLETED: "booking_completed",
-  REVIEW_REQUEST: "booking_completed",
+  REVIEW_REQUEST: "review_request",
   TOKEN_CONFIRMED: "token_confirmed",
   TOKEN_REMINDER_1H: "token_reminder_1h",
   TOKEN_CANCELLED: "token_cancelled",
