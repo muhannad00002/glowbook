@@ -8,6 +8,9 @@ abstract final class Env {
   static const apiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:3000');
   static const appBaseUrl = String.fromEnvironment('APP_BASE_URL', defaultValue: 'http://localhost:8080');
 
+  /// The salon this app runs (Glowbook is deployed for a single salon).
+  static const salonSlug = String.fromEnvironment('SALON_SLUG', defaultValue: 'maison-beauty');
+
   /// Shows the demo-account shortcuts on the sign-in screen. Off for production builds.
   static const showDemoAccounts = bool.fromEnvironment('SHOW_DEMO_ACCOUNTS', defaultValue: true);
 }

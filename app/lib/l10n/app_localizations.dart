@@ -3655,6 +3655,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} due'**
   String seasonBalanceDue(String amount);
+
+  /// No description provided for @flowStepOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{step}/{total}'**
+  String flowStepOf(int step, int total);
+
+  /// No description provided for @flowServicesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one or more — they\'re done back to back.'**
+  String get flowServicesHint;
+
+  /// No description provided for @flowArtistHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Who would you like? Any artist shows the most times.'**
+  String get flowArtistHint;
+
+  /// No description provided for @flowAnyArtistHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Most available times'**
+  String get flowAnyArtistHint;
+
+  /// No description provided for @flowDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Days with free times are highlighted.'**
+  String get flowDateHint;
+
+  /// No description provided for @flowPickAnotherDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick another day'**
+  String get flowPickAnotherDay;
+
+  /// No description provided for @flowLinkSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent the details and a link to view or change it on WhatsApp.'**
+  String get flowLinkSentBody;
+
+  /// No description provided for @linkExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This link has expired'**
+  String get linkExpiredTitle;
+
+  /// No description provided for @linkExpiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Links work until a day after the appointment. Contact the salon if you need help.'**
+  String get linkExpiredBody;
+
+  /// No description provided for @linkInvalidTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This link isn\'t valid'**
+  String get linkInvalidTitle;
+
+  /// No description provided for @linkInvalidBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Please open the link we sent you on WhatsApp.'**
+  String get linkInvalidBody;
+
+  /// No description provided for @authTeamSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Team sign in'**
+  String get authTeamSignIn;
+
+  /// No description provided for @authTeamSignInSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For the salon team. Customers book without an account.'**
+  String get authTeamSignInSubtitle;
+
+  /// No description provided for @authBackToSalon.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the salon'**
+  String get authBackToSalon;
+
+  /// No description provided for @homeTeamSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Team sign in'**
+  String get homeTeamSignIn;
+
+  /// No description provided for @manageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your booking'**
+  String get manageTitle;
+
+  /// No description provided for @manageTooLate.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s too close to your appointment to change it online — please call the salon.'**
+  String get manageTooLate;
+
+  /// No description provided for @manageBookAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Book again'**
+  String get manageBookAgain;
+
+  /// No description provided for @manageNowAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Now:'**
+  String get manageNowAt;
+
+  /// No description provided for @homeHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get homeHours;
 }
 
 class _AppLocalizationsDelegate

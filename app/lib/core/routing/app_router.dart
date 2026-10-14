@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/auth/presentation/register_screens.dart';
+import '../../features/auth/presentation/password_screens.dart';
 import '../../features/bookings/presentation/new_booking_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/customer_booking/presentation/booking_flow_screen.dart';
-import '../../features/customer_booking/presentation/my_appointments_screens.dart';
+import '../../features/customer_booking/presentation/manage_booking_screen.dart';
 import '../../features/customer_booking/presentation/profile_screen.dart';
 import '../../features/customers/presentation/customers_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
@@ -15,8 +15,7 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/payments/presentation/payments_screen.dart';
 import '../../features/platform/platform_screen.dart';
 import '../../features/reports/presentation/reports_screen.dart';
-import '../../features/salon/presentation/discover_screen.dart';
-import '../../features/salon/presentation/salon_page_screen.dart';
+import '../../features/salon/presentation/salon_home_screen.dart';
 import '../../features/salon/presentation/salon_reviews_screen.dart';
 import '../../features/seasonal/presentation/seasonal_admin_screen.dart';
 import '../../features/seasonal/presentation/token_flow_screen.dart';
@@ -27,20 +26,29 @@ import '../../features/staff/presentation/staff_screens.dart';
 import '../../shared/animations/page_transitions.dart';
 import '../../shared/models/models.dart';
 import '../auth/auth_controller.dart';
+import '../constants/env.dart';
 import 'shells.dart';
 import 'splash_screen.dart';
 
-/// Where each role lands after signing in.
+/// Where each team role lands after signing in. (Customers have no accounts.)
 String homeFor(Session s) => switch (s.me.homeRole) {
       HomeRole.superAdmin => s.me.memberships.isNotEmpty ? '/admin' : '/platform',
       HomeRole.salonAdmin => '/admin',
       HomeRole.staff => '/staff',
-      HomeRole.customer => '/discover',
+      HomeRole.customer => '/',
     };
 
-const _authPaths = ['/login', '/register', '/register-salon', '/forgot-password', '/phone-login'];
+const _authPaths = ['/login', '/forgot-password'];
+
+/// The customer side: the salon, booking, and the pages her links open — no sign-in.
 bool _isPublic(String p) =>
-    p.startsWith('/salon/') || p.startsWith('/booking/') || p.startsWith('/token/') || p.startsWith('/reset-password') || p == '/discover';
+    p == '/' ||
+    p == '/book' ||
+    p.startsWith('/tokens/') ||
+    p.startsWith('/booking/') ||
+    p.startsWith('/token/') ||
+    p.startsWith('/salon/') ||
+    p.startsWith('/reset-password');
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever auth changes, without rebuilding the router.
@@ -55,7 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authControllerProvider);
       final path = state.uri.path;
       if (auth.isLoading) {
-        if (path == '/splash' || _isPublic(path)) return null;
+        if (path == '/splash' || _isPublic(path) || _authPaths.contains(path)) return null;
         // Keep the deep link (e.g. /admin/calendar) across the session restore.
         return path == '/' ? '/splash' : '/splash?from=${Uri.encodeComponent(state.uri.toString())}';
       }
@@ -65,11 +73,12 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (session == null) {
         if (_isPublic(path) || _authPaths.contains(path)) return null;
-        final back = path == '/splash' ? from : (path == '/' ? null : state.uri.toString());
-        return back == null ? '/login' : '/login?from=${Uri.encodeComponent(back)}';
+        final back = path == '/splash' ? from : state.uri.toString();
+        if (back == null) return '/';
+        return '/login?from=${Uri.encodeComponent(back)}';
       }
 
-      if (_authPaths.contains(path) || path == '/' || path == '/splash') {
+      if (_authPaths.contains(path) || path == '/splash') {
         return from != null && from.startsWith('/') ? from : homeFor(session);
       }
 
@@ -81,29 +90,29 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     errorBuilder: (context, state) => const SplashScreen(),
     routes: [
-      GoRoute(path: '/', builder: (_, _) => const SplashScreen()),
+      // The salon — the whole customer app. One salon per deployment (SALON_SLUG).
+      GoRoute(path: '/', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const SalonHomeScreen(slug: Env.salonSlug))),
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
-
-      // Auth
-      GoRoute(path: '/login', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, LoginScreen(redirect: s.uri.queryParameters['from']))),
-      GoRoute(path: '/register', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, const RegisterScreen())),
-      GoRoute(path: '/register-salon', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, const RegisterSalonScreen())),
-      GoRoute(path: '/forgot-password', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, const ForgotPasswordScreen())),
-      GoRoute(path: '/phone-login', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, const PhoneLoginScreen())),
-      GoRoute(path: '/reset-password', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, ResetPasswordScreen(token: s.uri.queryParameters['token'] ?? ''))),
-
-      // Public booking page & guest manage link — no account needed.
       GoRoute(
-        path: '/salon/:slug',
-        pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, SalonPageScreen(slug: s.pathParameters['slug']!)),
+        path: '/book',
+        pageBuilder: (_, s) => AnimatedPageTransition.rise(s, BookingFlowScreen(slug: Env.salonSlug, serviceId: s.uri.queryParameters['service'])),
+      ),
+      GoRoute(
+        path: '/tokens/:eventId',
+        pageBuilder: (_, s) => AnimatedPageTransition.rise(s, TokenFlowScreen(slug: Env.salonSlug, eventId: s.pathParameters['eventId']!)),
+      ),
+      // Old share links still land on the salon.
+      GoRoute(path: '/salon/:slug', redirect: (_, _) => '/'),
+      GoRoute(path: '/salon/:slug/book', redirect: (_, _) => '/book'),
+
+      // Pages her links open (temporary, no account).
+      GoRoute(
+        path: '/booking/:id',
+        pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, ManageBookingScreen(id: s.pathParameters['id']!, token: s.uri.queryParameters['token'])),
         routes: [
           GoRoute(
-            path: 'book',
-            pageBuilder: (_, s) => AnimatedPageTransition.rise(s, BookingFlowScreen(slug: s.pathParameters['slug']!, serviceId: s.uri.queryParameters['service'])),
-          ),
-          GoRoute(
-            path: 'tokens/:eventId',
-            pageBuilder: (_, s) => AnimatedPageTransition.rise(s, TokenFlowScreen(slug: s.pathParameters['slug']!, eventId: s.pathParameters['eventId']!)),
+            path: 'reschedule',
+            pageBuilder: (_, s) => AnimatedPageTransition.rise(s, RescheduleScreen(id: s.pathParameters['id']!, token: s.uri.queryParameters['token'])),
           ),
         ],
       ),
@@ -111,22 +120,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/token/:id',
         pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, TokenScreen(id: s.pathParameters['id']!, access: s.uri.queryParameters['token'])),
       ),
-      GoRoute(
-        path: '/booking/:id',
-        pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, AppointmentDetailScreen(id: s.pathParameters['id']!, token: s.uri.queryParameters['token'])),
-      ),
 
-      // Customer
-      ShellRoute(
-        builder: (_, s, child) => CustomerShell(location: s.uri.path, child: child),
-        routes: [
-          GoRoute(path: '/discover', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const DiscoverScreen())),
-          GoRoute(path: '/appointments', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const MyAppointmentsScreen())),
-          GoRoute(path: '/appointments/:id', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, AppointmentDetailScreen(id: s.pathParameters['id']!))),
-          GoRoute(path: '/inbox', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const NotificationsScreen())),
-          GoRoute(path: '/profile', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const ProfileScreen())),
-        ],
-      ),
+      // Team sign-in
+      GoRoute(path: '/login', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, LoginScreen(redirect: s.uri.queryParameters['from']))),
+      GoRoute(path: '/forgot-password', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, const ForgotPasswordScreen())),
+      GoRoute(path: '/reset-password', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, ResetPasswordScreen(token: s.uri.queryParameters['token'] ?? ''))),
 
       // Salon admin / reception
       GoRoute(
@@ -173,7 +171,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/staff/clients', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const CustomersScreen())),
           GoRoute(path: '/staff/clients/:id', pageBuilder: (_, s) => AnimatedPageTransition.sharedAxis(s, CustomerProfileScreen(id: s.pathParameters['id']!))),
           GoRoute(path: '/staff/inbox', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const NotificationsScreen())),
-          GoRoute(path: '/staff/profile', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const ProfileScreen(showFavorites: false))),
+          GoRoute(path: '/staff/profile', pageBuilder: (_, s) => AnimatedPageTransition.fadeThrough(s, const ProfileScreen())),
         ],
       ),
 

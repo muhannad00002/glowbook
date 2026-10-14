@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/auth_controller.dart';
 import '../../../core/theme/app_colors.dart';
@@ -38,11 +37,7 @@ class NotificationsScreen extends ConsumerWidget {
     void open(AppNotification n) {
       ref.read(inboxProvider.notifier).markRead(n.id);
       if (n.bookingId == null) return;
-      if (membership != null) {
-        showBookingDetail(context, n.bookingId!);
-      } else {
-        context.push('/appointments/${n.bookingId}');
-      }
+      if (membership != null) showBookingDetail(context, n.bookingId!);
     }
 
     return Scaffold(

@@ -48,8 +48,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final l = context.l10n;
     final v = V(context);
     return AuthLayout(
-      title: l.authWelcomeBack,
-      subtitle: l.authSignInSubtitle,
+      title: l.authTeamSignIn,
+      subtitle: l.authTeamSignInSubtitle,
       art: GlowArt.mirror,
       children: [
         Form(
@@ -89,34 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         const SizedBox(height: Space.sm),
         AnimatedButton(label: l.authSignIn, onPressed: _submit, keepSuccess: true),
         const SizedBox(height: Space.lg),
-        Row(children: [
-          const Expanded(child: Divider()),
-          Padding(padding: const EdgeInsets.symmetric(horizontal: Space.md), child: Text(l.authOr, style: context.text.bodySmall)),
-          const Expanded(child: Divider()),
-        ]),
-        const SizedBox(height: Space.lg),
-        OutlinedButton.icon(
-          onPressed: () => context.push('/phone-login'),
-          icon: const Icon(Icons.sms_outlined),
-          label: Text(l.authPhoneSignIn),
-        ),
-        const SizedBox(height: Space.xl),
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(l.authNoAccount, style: context.text.bodyMedium),
-            TextButton(onPressed: () => context.push('/register'), child: Text(l.authCreateAccount)),
-          ],
-        ),
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(l.authOwnSalon, style: context.text.bodyMedium),
-            TextButton(onPressed: () => context.push('/register-salon'), child: Text(l.authRegisterSalon)),
-          ],
-        ),
+        TextButton.icon(onPressed: () => context.go('/'), icon: const Icon(Icons.storefront_outlined), label: Text(l.authBackToSalon)),
         if (Env.showDemoAccounts) ...[
           const SizedBox(height: Space.lg),
           _DemoAccounts(onPick: _fill),
@@ -136,7 +109,6 @@ class _DemoAccounts extends StatelessWidget {
       ('Owner', 'owner@maisonbeauty.om', 'Maison#2026', Icons.storefront_outlined),
       ('Reception', 'reception@maisonbeauty.om', 'Maison#2026', Icons.support_agent_outlined),
       ('Sarah · Artist', 'sarah@maisonbeauty.om', 'Staff#2026', Icons.brush_outlined),
-      ('Customer', 'customer@glowbook.app', 'Customer#2026', Icons.favorite_border_rounded),
       ('Super admin', 'admin@glowbook.app', 'Glowbook#2026', Icons.admin_panel_settings_outlined),
     ];
     return GlowCard(

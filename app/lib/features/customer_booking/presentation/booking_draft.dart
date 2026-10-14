@@ -4,8 +4,19 @@ import '../../../shared/models/models.dart';
 import '../../salon/data/salon_repository.dart';
 import '../data/customer_booking_repository.dart';
 
-/// Booking state for the 3-step customer flow — Choose → Details → Verify — kept apart
-/// from the widgets so steps can animate in and out without losing what she picked.
+/// The booking steps — one decision per screen, so no step ever needs to scroll.
+abstract final class BookStep {
+  static const services = 0;
+  static const artist = 1;
+  static const date = 2;
+  static const time = 3;
+  static const details = 4;
+  static const verify = 5;
+  static const count = 6;
+}
+
+/// Booking state for the customer flow, kept apart from the widgets so steps can animate
+/// in and out without losing what she picked.
 class BookingDraft {
   const BookingDraft({
     this.step = 0,
@@ -16,7 +27,6 @@ class BookingDraft {
     this.slot,
     this.name = '',
     this.phone = '',
-    this.notes = '',
     this.codeSentTo,
     this.codeSentAt,
     this.testCode,
@@ -36,7 +46,6 @@ class BookingDraft {
   final Slot? slot;
   final String name;
   final String phone;
-  final String notes;
   final String? codeSentTo;
   final DateTime? codeSentAt;
 
@@ -59,30 +68,27 @@ class BookingDraft {
     bool clearSlot = false,
     String? name,
     String? phone,
-    String? notes,
     String? codeSentTo,
     DateTime? codeSentAt,
     String? testCode,
     bool clearTestCode = false,
     BookingResult? result,
     bool? paid,
-  }) =>
-      BookingDraft(
-        step: step ?? this.step,
-        forward: forward ?? this.forward,
-        serviceIds: serviceIds ?? this.serviceIds,
-        staffId: clearStaff ? null : (staffId ?? this.staffId),
-        date: clearDate ? null : (date ?? this.date),
-        slot: clearSlot ? null : (slot ?? this.slot),
-        name: name ?? this.name,
-        phone: phone ?? this.phone,
-        notes: notes ?? this.notes,
-        codeSentTo: codeSentTo ?? this.codeSentTo,
-        codeSentAt: codeSentAt ?? this.codeSentAt,
-        testCode: clearTestCode ? null : (testCode ?? this.testCode),
-        result: result ?? this.result,
-        paid: paid ?? this.paid,
-      );
+  }) => BookingDraft(
+    step: step ?? this.step,
+    forward: forward ?? this.forward,
+    serviceIds: serviceIds ?? this.serviceIds,
+    staffId: clearStaff ? null : (staffId ?? this.staffId),
+    date: clearDate ? null : (date ?? this.date),
+    slot: clearSlot ? null : (slot ?? this.slot),
+    name: name ?? this.name,
+    phone: phone ?? this.phone,
+    codeSentTo: codeSentTo ?? this.codeSentTo,
+    codeSentAt: codeSentAt ?? this.codeSentAt,
+    testCode: clearTestCode ? null : (testCode ?? this.testCode),
+    result: result ?? this.result,
+    paid: paid ?? this.paid,
+  );
 }
 
 /// Artists who can do every chosen service (the visit stays with one artist).
@@ -109,9 +115,9 @@ class BookingDraftController extends AutoDisposeFamilyNotifier<BookingDraft, Str
   void pickStaff(String? id) => state = id == null ? state.copyWith(clearStaff: true, clearSlot: true) : state.copyWith(staffId: id, clearSlot: true);
   void pickDate(String date) => state = state.copyWith(date: date, clearSlot: true, forward: state.date == null || date.compareTo(state.date!) >= 0);
   void pickSlot(Slot slot) => state = state.copyWith(slot: slot);
-  void details({required String name, required String phone, required String notes}) => state = state.copyWith(name: name, phone: phone, notes: notes);
+  void details({required String name, required String phone}) => state = state.copyWith(name: name, phone: phone);
 
-  /// Step 2 → 3: text a code to her phone.
+  /// Details → Verify: text a code to her phone.
   Future<void> sendCode(String locale) async {
     final testCode = await _repo.requestCode(state.phone, locale);
     state = state.copyWith(
@@ -119,21 +125,18 @@ class BookingDraftController extends AutoDisposeFamilyNotifier<BookingDraft, Str
       codeSentAt: DateTime.now(),
       testCode: testCode,
       clearTestCode: testCode == null,
-      step: 2,
+      step: BookStep.verify,
       forward: true,
     );
   }
 
-  /// Step 3: check the code, then book with the resulting phone token.
+  /// Verify: check the code, then book with the resulting phone token.
   Future<void> verifyAndBook(String code) async {
     final token = await _repo.verifyCode(state.phone, code);
     await _book(token);
   }
 
-  /// Signed in with this phone already verified — no code needed.
-  Future<void> bookVerified() => _book(null);
-
-  Future<void> _book(String? phoneToken) async {
+  Future<void> _book(String phoneToken) async {
     final s = state;
     final result = await _repo.book(
       salon: arg,
@@ -143,17 +146,15 @@ class BookingDraftController extends AutoDisposeFamilyNotifier<BookingDraft, Str
       name: s.name.trim(),
       phone: s.phone,
       phoneToken: phoneToken,
-      notes: s.notes.trim(),
     );
-    ref.invalidate(myBookingsProvider);
     state = state.copyWith(result: result);
   }
 
-  /// Someone else just took the time: back to step 1 with fresh availability.
+  /// Someone else just took the time: back to the times with fresh availability.
   void slotTaken() {
     ref.invalidate(visitSlotsProvider);
     ref.invalidate(visitDaysProvider);
-    state = state.copyWith(step: 0, forward: false, clearSlot: true);
+    state = state.copyWith(step: BookStep.time, forward: false, clearSlot: true);
   }
 
   /// Pays every outstanding deposit in the visit (test gateway confirms in place;

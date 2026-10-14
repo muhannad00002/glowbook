@@ -902,5 +902,35 @@
         "type": "String"
       }
     }
-  }
+  },
+  "flowStepOf": "{step}/{total}",
+  "@flowStepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "flowServicesHint": "Pick one or more — they're done back to back.",
+  "flowArtistHint": "Who would you like? Any artist shows the most times.",
+  "flowAnyArtistHint": "Most available times",
+  "flowDateHint": "Days with free times are highlighted.",
+  "flowPickAnotherDay": "Pick another day",
+  "flowLinkSentBody": "We've sent the details and a link to view or change it on WhatsApp.",
+  "linkExpiredTitle": "This link has expired",
+  "linkExpiredBody": "Links work until a day after the appointment. Contact the salon if you need help.",
+  "linkInvalidTitle": "This link isn't valid",
+  "linkInvalidBody": "Please open the link we sent you on WhatsApp.",
+  "authTeamSignIn": "Team sign in",
+  "authTeamSignInSubtitle": "For the salon team. Customers book without an account.",
+  "authBackToSalon": "Back to the salon",
+  "homeTeamSignIn": "Team sign in",
+  "manageTitle": "Your booking",
+  "manageTooLate": "It's too close to your appointment to change it online — please call the salon.",
+  "manageBookAgain": "Book again",
+  "manageNowAt": "Now:",
+  "homeHours": "Hours"
 }

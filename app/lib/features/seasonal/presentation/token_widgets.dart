@@ -158,10 +158,9 @@ class _Perforation extends StatelessWidget {
   );
 }
 
-/// Banner on the salon page while a seasonal event takes tokens.
+/// Compact card on the salon home while a seasonal event takes tokens.
 class SeasonalBanner extends StatelessWidget {
-  const SeasonalBanner({super.key, required this.slug, required this.event});
-  final String slug;
+  const SeasonalBanner({super.key, required this.event});
   final SeasonalEvent event;
 
   @override
@@ -170,59 +169,40 @@ class SeasonalBanner extends StatelessWidget {
     final fmt = context.fmt;
     final lang = context.lang;
     final cheapest = event.offerings.map((o) => o.priceBaisa).fold<int?>(null, (m, p) => m == null || p < m ? p : m);
-    final narrow = MediaQuery.sizeOf(context).width < 480;
-    final button = FilledButton.icon(
-      style: FilledButton.styleFrom(
-        minimumSize: const Size(0, 44),
-        padding: const EdgeInsets.symmetric(horizontal: Space.lg),
-      ),
-      onPressed: () => context.push('/salon/$slug/tokens/${event.id}'),
-      icon: const Icon(Icons.confirmation_number_outlined, size: 18),
-      label: Text(l.seasonTakeToken),
-    );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: Space.lg),
-      child: GlowCard(
-        gradient: context.glow.heroGradient,
-        onTap: () => context.push('/salon/$slug/tokens/${event.id}'),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
+    return GlowCard(
+      padding: const EdgeInsets.symmetric(horizontal: Space.md, vertical: Space.sm),
+      gradient: context.glow.heroGradient,
+      onTap: () => context.push('/tokens/${event.id}'),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(gradient: context.glow.cardGradient, borderRadius: Radii.mdAll),
+            child: const Icon(Icons.confirmation_number_outlined, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: Space.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(gradient: context.glow.cardGradient, borderRadius: Radii.mdAll),
-                  child: const Icon(Icons.confirmation_number_outlined, color: Colors.white),
+                Text(event.title(lang), style: context.text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  [
+                    '${fmt.ymdLabel(event.startDate, pattern: 'MMMd')} – ${fmt.ymdLabel(event.endDate, pattern: 'MMMd')}',
+                    if (cheapest != null) l.seasonFrom(fmt.money(cheapest)),
+                  ].join(' · '),
+                  style: context.text.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: Space.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(event.title(lang), style: context.text.titleMedium),
-                      Text(
-                        [
-                          '${fmt.ymdLabel(event.startDate, pattern: 'MMMd')} – ${fmt.ymdLabel(event.endDate, pattern: 'MMMd')}',
-                          if (cheapest != null) l.seasonFrom(fmt.money(cheapest)),
-                        ].join(' · '),
-                        style: context.text.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                if (!narrow) ...[const SizedBox(width: Space.sm), button],
               ],
             ),
-            if (event.blurb(lang) != null)
-              Padding(
-                padding: const EdgeInsets.only(top: Space.sm),
-                child: Text(event.blurb(lang)!, style: context.text.bodyMedium, maxLines: 3, overflow: TextOverflow.ellipsis),
-              ),
-            if (narrow) ...[const SizedBox(height: Space.md), button],
-          ],
-        ),
+          ),
+          const SizedBox(width: Space.sm),
+          Text(l.seasonTakeToken, style: context.text.labelLarge?.copyWith(color: context.colors.primary)),
+          Icon(Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded, color: context.colors.primary),
+        ],
       ),
     );
   }

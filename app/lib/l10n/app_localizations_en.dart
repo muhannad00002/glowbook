@@ -1955,4 +1955,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String seasonBalanceDue(String amount) {
     return '$amount due';
   }
+
+  @override
+  String flowStepOf(int step, int total) {
+    return '$step/$total';
+  }
+
+  @override
+  String get flowServicesHint =>
+      'Pick one or more — they\'re done back to back.';
+
+  @override
+  String get flowArtistHint =>
+      'Who would you like? Any artist shows the most times.';
+
+  @override
+  String get flowAnyArtistHint => 'Most available times';
+
+  @override
+  String get flowDateHint => 'Days with free times are highlighted.';
+
+  @override
+  String get flowPickAnotherDay => 'Pick another day';
+
+  @override
+  String get flowLinkSentBody =>
+      'We\'ve sent the details and a link to view or change it on WhatsApp.';
+
+  @override
+  String get linkExpiredTitle => 'This link has expired';
+
+  @override
+  String get linkExpiredBody =>
+      'Links work until a day after the appointment. Contact the salon if you need help.';
+
+  @override
+  String get linkInvalidTitle => 'This link isn\'t valid';
+
+  @override
+  String get linkInvalidBody => 'Please open the link we sent you on WhatsApp.';
+
+  @override
+  String get authTeamSignIn => 'Team sign in';
+
+  @override
+  String get authTeamSignInSubtitle =>
+      'For the salon team. Customers book without an account.';
+
+  @override
+  String get authBackToSalon => 'Back to the salon';
+
+  @override
+  String get homeTeamSignIn => 'Team sign in';
+
+  @override
+  String get manageTitle => 'Your booking';
+
+  @override
+  String get manageTooLate =>
+      'It\'s too close to your appointment to change it online — please call the salon.';
+
+  @override
+  String get manageBookAgain => 'Book again';
+
+  @override
+  String get manageNowAt => 'Now:';
+
+  @override
+  String get homeHours => 'Hours';
 }

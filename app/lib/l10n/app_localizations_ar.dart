@@ -1951,4 +1951,70 @@ class AppLocalizationsAr extends AppLocalizations {
   String seasonBalanceDue(String amount) {
     return 'متبقي $amount';
   }
+
+  @override
+  String flowStepOf(int step, int total) {
+    return '$step/$total';
+  }
+
+  @override
+  String get flowServicesHint => 'اختاري خدمة أو أكثر — تُنفّذ متتالية.';
+
+  @override
+  String get flowArtistHint => 'من تفضلين؟ خيار «أي فنانة» يعرض أوقاتاً أكثر.';
+
+  @override
+  String get flowAnyArtistHint => 'أكثر الأوقات المتاحة';
+
+  @override
+  String get flowDateHint => 'الأيام المتاحة واضحة باللون.';
+
+  @override
+  String get flowPickAnotherDay => 'اختاري يوماً آخر';
+
+  @override
+  String get flowLinkSentBody =>
+      'أرسلنا التفاصيل ورابطاً لعرض الحجز أو تغييره عبر واتساب.';
+
+  @override
+  String get linkExpiredTitle => 'انتهت صلاحية هذا الرابط';
+
+  @override
+  String get linkExpiredBody =>
+      'تعمل الروابط حتى يوم بعد الموعد. تواصلي مع الصالون إن احتجتِ مساعدة.';
+
+  @override
+  String get linkInvalidTitle => 'هذا الرابط غير صالح';
+
+  @override
+  String get linkInvalidBody => 'يرجى فتح الرابط الذي أرسلناه لك عبر واتساب.';
+
+  @override
+  String get authTeamSignIn => 'دخول فريق العمل';
+
+  @override
+  String get authTeamSignInSubtitle =>
+      'لفريق الصالون. الحجز للعميلات لا يحتاج حساباً.';
+
+  @override
+  String get authBackToSalon => 'العودة إلى الصالون';
+
+  @override
+  String get homeTeamSignIn => 'دخول فريق العمل';
+
+  @override
+  String get manageTitle => 'حجزك';
+
+  @override
+  String get manageTooLate =>
+      'اقترب موعدك ولا يمكن تغييره عبر الإنترنت — يرجى الاتصال بالصالون.';
+
+  @override
+  String get manageBookAgain => 'احجزي مجدداً';
+
+  @override
+  String get manageNowAt => 'الموعد الحالي:';
+
+  @override
+  String get homeHours => 'المواعيد';
 }

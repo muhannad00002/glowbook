@@ -94,28 +94,3 @@ class StaffShell extends ConsumerWidget {
     );
   }
 }
-
-class CustomerShell extends ConsumerWidget {
-  const CustomerShell({super.key, required this.child, required this.location});
-  final Widget child;
-  final String location;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final unread = ref.watch(inboxProvider).valueOrNull?.unread ?? 0;
-    return ResponsiveShell(
-      destinations: [
-        ShellDestination(path: '/discover', icon: Icons.explore_outlined, selectedIcon: Icons.explore_rounded, label: l.navDiscover),
-        ShellDestination(path: '/appointments', icon: Icons.event_note_outlined, selectedIcon: Icons.event_note_rounded, label: l.navAppointments),
-        ShellDestination(path: '/inbox', icon: Icons.notifications_none_rounded, selectedIcon: Icons.notifications_rounded, label: l.navInbox, badge: unread),
-        ShellDestination(path: '/profile', icon: Icons.person_outline_rounded, selectedIcon: Icons.person_rounded, label: l.navProfile),
-      ],
-      currentPath: location,
-      onNavigate: context.go,
-      moreLabel: l.navMore,
-      header: const _ShellHeader(),
-      child: child,
-    );
-  }
-}

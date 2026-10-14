@@ -59,51 +59,6 @@ class AuthController extends AsyncNotifier<Session?> {
     await _acceptAuthPayload(await _api.post<Object?>('/api/auth/login', body: {'identifier': identifier, 'password': password}));
   }
 
-  Future<void> register({required String name, required String email, required String password, String? phone, required String locale}) async {
-    await _acceptAuthPayload(await _api.post<Object?>('/api/auth/register', body: {
-      'name': name,
-      'email': email,
-      'password': password,
-      if (phone != null && phone.isNotEmpty) 'phone': phone,
-      'locale': locale,
-    }));
-  }
-
-  Future<void> registerSalon({
-    required String ownerName,
-    required String email,
-    required String password,
-    required String salonName,
-    String? phone,
-    String? city,
-    required String locale,
-  }) async {
-    await _acceptAuthPayload(await _api.post<Object?>('/api/auth/register-salon', body: {
-      'ownerName': ownerName,
-      'email': email,
-      'password': password,
-      'salonName': salonName,
-      if (phone != null && phone.isNotEmpty) 'phone': phone,
-      if (city != null && city.isNotEmpty) 'city': city,
-      'locale': locale,
-    }));
-  }
-
-  /// Returns the development code when no SMS provider is configured.
-  Future<String?> requestOtp(String phone, String locale) async {
-    final data = asJson(await _api.post<Object?>('/api/auth/otp/request', body: {'phone': phone, 'locale': locale}));
-    return asStr(data['devCode']);
-  }
-
-  Future<void> verifyOtp(String phone, String code, {String? name, required String locale}) async {
-    await _acceptAuthPayload(await _api.post<Object?>('/api/auth/otp/verify', body: {
-      'phone': phone,
-      'code': code,
-      if (name != null && name.isNotEmpty) 'name': name,
-      'locale': locale,
-    }));
-  }
-
   /// Returns the development reset token when no email provider is configured.
   Future<String?> forgotPassword(String email) async {
     final data = asJson(await _api.post<Object?>('/api/auth/forgot-password', body: {'email': email}));
