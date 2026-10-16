@@ -6,6 +6,7 @@ import '../../../core/constants/env.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/utils/format.dart';
+import '../../../shared/animations/animated_button.dart';
 import '../../../shared/widgets/common.dart';
 import '../data/seasonal_repository.dart';
 
@@ -160,7 +161,8 @@ class _Perforation extends StatelessWidget {
   );
 }
 
-/// Compact card on the salon home while a seasonal event takes tokens.
+/// The seasonal event on the salon home: a ticket-like card that says what it is, when,
+/// what's on offer and how to get a token — in one glance.
 class SeasonalBanner extends StatelessWidget {
   const SeasonalBanner({super.key, required this.event});
   final SeasonalEvent event;
@@ -170,41 +172,66 @@ class SeasonalBanner extends StatelessWidget {
     final l = context.l10n;
     final fmt = context.fmt;
     final lang = context.lang;
-    final cheapest = event.offerings.map((o) => o.priceBaisa).fold<int?>(null, (m, p) => m == null || p < m ? p : m);
-    return GlowCard(
-      padding: const EdgeInsets.symmetric(horizontal: Space.md, vertical: Space.sm),
-      gradient: context.glow.heroGradient,
-      onTap: () => context.push('/tokens/${event.id}'),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(gradient: context.glow.cardGradient, borderRadius: Radii.mdAll),
-            child: const Icon(Icons.confirmation_number_outlined, color: Colors.white, size: 22),
+    const onCard = Colors.white;
+    final soft = onCard.withValues(alpha: 0.8);
+    void open() => context.push('/tokens/${event.id}');
+    return Semantics(
+      button: true,
+      label: '${event.title(lang)}, ${l.seasonTakeToken}',
+      child: PressableScale(
+        onTap: open,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: context.glow.cardGradient,
+            borderRadius: Radii.lgAll,
+            boxShadow: [BoxShadow(color: context.glow.shadow, blurRadius: 18, offset: const Offset(0, 8))],
           ),
-          const SizedBox(width: Space.md),
-          Expanded(
+          padding: const EdgeInsets.fromLTRB(Space.lg, Space.md, Space.md, Space.md),
+          child: ExcludeSemantics(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(event.title(lang), style: context.text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(
-                  [
-                    '${fmt.ymdLabel(event.startDate, pattern: 'MMMd')} – ${fmt.ymdLabel(event.endDate, pattern: 'MMMd')}',
-                    if (cheapest != null) l.seasonFrom(fmt.money(cheapest)),
-                  ].join(' · '),
-                  style: context.text.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    const Icon(Icons.confirmation_number_outlined, color: onCard, size: 20),
+                    const SizedBox(width: Space.sm),
+                    Expanded(
+                      child: Text(
+                        event.title(lang),
+                        style: context.text.titleMedium?.copyWith(color: onCard),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '${fmt.ymdLabel(event.startDate, pattern: 'MMMd')} – ${fmt.ymdLabel(event.endDate, pattern: 'MMMd')}',
+                      style: context.text.labelMedium?.copyWith(color: soft),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Space.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        event.offerings.map((o) => o.title(lang)).join(' · '),
+                        style: context.text.bodySmall?.copyWith(color: soft),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: Space.sm),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: Space.md, vertical: Space.sm),
+                      decoration: BoxDecoration(color: onCard, borderRadius: Radii.pillAll),
+                      child: Text(l.seasonTakeToken, style: context.text.labelLarge?.copyWith(color: context.colors.primary)),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(width: Space.sm),
-          Text(l.seasonTakeToken, style: context.text.labelLarge?.copyWith(color: context.colors.primary)),
-          Icon(Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded, color: context.colors.primary),
-        ],
+        ),
       ),
     );
   }

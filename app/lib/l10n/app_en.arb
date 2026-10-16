@@ -933,5 +933,7 @@
   "manageBookAgain": "Book again",
   "manageNowAt": "Now:",
   "homeHours": "Hours",
-  "walletAdd": "Add to Apple Wallet"
+  "walletAdd": "Add to Apple Wallet",
+  "settingsGallery": "Gallery photos",
+  "settingsGalleryHelp": "One image link per line — shown as the swipeable header on your page."
 }

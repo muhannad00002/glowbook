@@ -580,8 +580,12 @@ class SalonProfile {
     required this.lateCancellationFeeBaisa,
     required this.depositPolicy,
     required this.closures,
+    this.photos = const [],
   });
   final SalonCard card;
+
+  /// Gallery images (cover first when set), shown as the swipeable header.
+  final List<String> photos;
   final String? description;
   final String? descriptionAr;
   final String? phone;
@@ -606,6 +610,7 @@ class SalonProfile {
 
   factory SalonProfile.fromJson(Json j) => SalonProfile(
         card: SalonCard.fromJson(j),
+        photos: <String>{?asStr(j['coverUrl']), ...(j['photos'] as List? ?? const []).whereType<String>()}.toList(),
         description: asStr(j['description']),
         descriptionAr: asStr(j['descriptionAr']),
         phone: asStr(j['phone']),

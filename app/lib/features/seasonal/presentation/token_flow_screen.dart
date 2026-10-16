@@ -231,7 +231,6 @@ class _FlowState extends ConsumerState<_Flow> {
         total: _Step.count,
         onBack: _back,
         title: l.seasonChooseDay,
-        subtitle: l.seasonReminderNote,
         body: DateGrid(
           dates: _event.dates,
           isEnabled: (_) => true,

@@ -2020,4 +2020,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get walletAdd => 'إضافة إلى Apple Wallet';
+
+  @override
+  String get settingsGallery => 'صور المعرض';
+
+  @override
+  String get settingsGalleryHelp =>
+      'رابط صورة في كل سطر — تظهر كمعرض قابل للتمرير أعلى صفحتك.';
 }

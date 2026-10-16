@@ -2026,4 +2026,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletAdd => 'Add to Apple Wallet';
+
+  @override
+  String get settingsGallery => 'Gallery photos';
+
+  @override
+  String get settingsGalleryHelp =>
+      'One image link per line — shown as the swipeable header on your page.';
 }

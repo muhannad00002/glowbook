@@ -130,7 +130,6 @@ class _FlowState extends ConsumerState<_Flow> {
         total: BookStep.count,
         onBack: back,
         title: l.flowServicesTitle,
-        subtitle: l.flowServicesHint,
         body: _ServicesStep(profile: p, draft: d, controller: _c),
         summary: summary,
         action: AnimatedButton(
@@ -145,7 +144,6 @@ class _FlowState extends ConsumerState<_Flow> {
         total: BookStep.count,
         onBack: back,
         title: l.flowArtistTitle,
-        subtitle: l.flowArtistHint,
         body: _ArtistStep(profile: p, draft: d, controller: _c),
         summary: summary,
         action: AnimatedButton(
@@ -160,7 +158,6 @@ class _FlowState extends ConsumerState<_Flow> {
         total: BookStep.count,
         onBack: back,
         title: l.flowDateTitle,
-        subtitle: l.flowDateHint,
         body: _DateStep(
           profile: p,
           draft: d,

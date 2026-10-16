@@ -460,6 +460,18 @@ async function seedSmallSalon(opts: {
 }
 
 /** A running Eid henna event at Maison Beauty, so seasonal tokens have something to show. */
+/** Demo gallery for the salon home (only when none is set). */
+async function seedGallery() {
+  const salon = await db.salon.findUnique({ where: { slug: "maison-beauty" } });
+  if (!salon || salon.photos.length) return;
+  const ids = ["1521590832167-7bcbfaa6381f", "1487412947147-5cebf100ffc2", "1522335789203-aabd1fc54bc9", "1516975080664-ed2fc6a32937"];
+  await db.salon.update({
+    where: { id: salon.id },
+    data: { photos: ids.map((id) => `https://images.unsplash.com/photo-${id}?w=1200&q=80&auto=format&fit=crop`) },
+  });
+  console.log("✓ gallery photos");
+}
+
 async function seedSeasonal(now: Date) {
   const salon = await db.salon.findUnique({ where: { slug: "maison-beauty" } });
   if (!salon) return;
@@ -506,6 +518,7 @@ async function main() {
     services: [{ name: "Engagement Makeup", nameAr: "مكياج خطوبة", price: 55, dur: 90 }, { name: "Party Glam", nameAr: "مكياج حفلات", price: 30, dur: 60 }],
   }, now);
   await seedSeasonal(now);
+  await seedGallery();
   console.log("\nDemo logins (development only):");
   console.log("  Salon owner  owner@maisonbeauty.om / Maison#2026");
   console.log("  Reception    reception@maisonbeauty.om / Maison#2026");

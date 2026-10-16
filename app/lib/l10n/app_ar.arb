@@ -613,5 +613,7 @@
   "manageBookAgain": "احجزي مجدداً",
   "manageNowAt": "الموعد الحالي:",
   "homeHours": "المواعيد",
-  "walletAdd": "إضافة إلى Apple Wallet"
+  "walletAdd": "إضافة إلى Apple Wallet",
+  "settingsGallery": "صور المعرض",
+  "settingsGalleryHelp": "رابط صورة في كل سطر — تظهر كمعرض قابل للتمرير أعلى صفحتك."
 }

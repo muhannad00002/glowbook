@@ -3781,6 +3781,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to Apple Wallet'**
   String get walletAdd;
+
+  /// No description provided for @settingsGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery photos'**
+  String get settingsGallery;
+
+  /// No description provided for @settingsGalleryHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'One image link per line — shown as the swipeable header on your page.'**
+  String get settingsGalleryHelp;
 }
 
 class _AppLocalizationsDelegate
