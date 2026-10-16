@@ -615,5 +615,8 @@
   "homeHours": "المواعيد",
   "walletAdd": "إضافة إلى Apple Wallet",
   "settingsGallery": "صور المعرض",
-  "settingsGalleryHelp": "رابط صورة في كل سطر — تظهر كمعرض قابل للتمرير أعلى صفحتك."
+  "settingsGalleryHelp": "تظهر الصورة الأولى أولاً. اسحبي لإعادة الترتيب.",
+  "settingsGalleryAdd": "إضافة صور",
+  "settingsGalleryAdded": "أُضيفت الصور إلى المعرض",
+  "settingsGalleryFirst": "الأولى"
 }

@@ -2032,5 +2032,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsGalleryHelp =>
-      'One image link per line — shown as the swipeable header on your page.';
+      'The first photo shows first. Drag to reorder.';
+
+  @override
+  String get settingsGalleryAdd => 'Add photos';
+
+  @override
+  String get settingsGalleryAdded => 'Photos added to your gallery';
+
+  @override
+  String get settingsGalleryFirst => 'First';
 }

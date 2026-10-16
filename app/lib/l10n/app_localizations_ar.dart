@@ -2026,5 +2026,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsGalleryHelp =>
-      'رابط صورة في كل سطر — تظهر كمعرض قابل للتمرير أعلى صفحتك.';
+      'تظهر الصورة الأولى أولاً. اسحبي لإعادة الترتيب.';
+
+  @override
+  String get settingsGalleryAdd => 'إضافة صور';
+
+  @override
+  String get settingsGalleryAdded => 'أُضيفت الصور إلى المعرض';
+
+  @override
+  String get settingsGalleryFirst => 'الأولى';
 }

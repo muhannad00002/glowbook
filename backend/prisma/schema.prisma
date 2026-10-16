@@ -327,6 +327,7 @@ model Salon {
   reviews        Review[]
   favorites      Favorite[]
   auditLogs      AuditLog[]
+  media          MediaFile[]
   staffServices  StaffService[]
   seasonalEvents SeasonalEvent[]
   seasonalTokens SeasonalToken[]
@@ -897,4 +898,20 @@ model SeasonalToken {
   @@index([offeringId, startTime])
   @@index([status, startTime])
   @@index([customerId])
+}
+
+/// Images uploaded by the salon (gallery photos), stored in the database so no extra
+/// storage service is needed. Served publicly at /api/media/:id.
+model MediaFile {
+  id          String   @id @default(uuid())
+  salonId     String
+  contentType String
+  bytes       Bytes
+  width       Int
+  height      Int
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
 }

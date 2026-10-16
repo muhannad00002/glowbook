@@ -16,6 +16,7 @@ import '../../../shared/models/models.dart';
 import '../../../shared/widgets/common.dart';
 import '../../auth/presentation/auth_layout.dart';
 import '../data/settings_repository.dart';
+import 'gallery_editor.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -158,11 +159,10 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
     for (final k in ['name', 'nameAr', 'tagline', 'taglineAr', 'description', 'descriptionAr', 'phone', 'whatsapp', 'address', 'addressAr', 'city'])
       k: TextEditingController(text: widget.settings.text(k) ?? ''),
   };
-  late final _photos = TextEditingController(text: ((widget.settings.json['photos'] as List?) ?? const []).join('\n'));
 
   @override
   void dispose() {
-    for (final c in [..._fields.values, _photos]) {
+    for (final c in _fields.values) {
       c.dispose();
     }
     super.dispose();
@@ -191,7 +191,7 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
         f('address', l.settingsAddress),
         f('addressAr', '${l.settingsAddress} (AR)', ar: true),
         f('city', l.authCity),
-        GlowField(controller: _photos, label: l.settingsGallery, helper: l.settingsGalleryHelp, maxLines: 4, textDirection: TextDirection.ltr),
+        GalleryEditor(settings: widget.settings),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           value: widget.settings.flag('isPublished'),
@@ -203,7 +203,6 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
           tone: ButtonTone.soft,
           onPressed: () => patchSalon(context, ref, {
             for (final e in _fields.entries) e.key: e.value.text.trim().isEmpty ? (e.key == 'name' ? widget.settings.name : null) : e.value.text.trim(),
-            'photos': _photos.text.split(RegExp(r'\s+')).where((u) => u.startsWith('http')).take(12).toList(),
           }),
         ),
       ],

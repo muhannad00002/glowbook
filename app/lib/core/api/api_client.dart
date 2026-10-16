@@ -49,6 +49,9 @@ class ApiClient {
     return (res.data as T, res.message);
   }
 
+  /// A FormData can only be sent once; a retry needs a fresh copy.
+  Object? _again(Object? body) => body is FormData ? body.clone() : body;
+
   Future<T> _send<T>(String method, String path, {Object? body, Map<String, dynamic>? query}) async {
     final res = await _raw(method, path, body: body, query: query);
     return res.data as T;
@@ -68,7 +71,8 @@ class ApiClient {
         path,
         data: body,
         queryParameters: query?..removeWhere((_, v) => v == null),
-        options: Options(method: method, headers: _headers()),
+        // Uploads go as multipart; everything else is JSON (the client default).
+        options: Options(method: method, headers: _headers(), contentType: body is FormData ? 'multipart/form-data' : null),
       );
     } on DioException catch (e) {
       final network = e.type == DioExceptionType.connectionError ||
@@ -76,7 +80,7 @@ class ApiClient {
           e.type == DioExceptionType.receiveTimeout;
       if (network && method == 'GET' && attempt == 0) {
         await Future<void>.delayed(const Duration(milliseconds: 600));
-        return _raw(method, path, body: body, query: query, retried: retried, attempt: 1);
+        return _raw(method, path, body: _again(body), query: query, retried: retried, attempt: 1);
       }
       throw ApiException('offline', offline: network, status: e.response?.statusCode);
     }
@@ -86,14 +90,14 @@ class ApiClient {
 
     if (status == 401 && !retried && !path.startsWith('/api/auth/')) {
       if (await _refresh()) {
-        return _raw(method, path, body: body, query: query, retried: true, attempt: attempt);
+        return _raw(method, path, body: _again(body), query: query, retried: true, attempt: attempt);
       }
       // The session is over: drop the stale token and sign out. Public endpoints (the
       // booking page) still work, so replay once as a guest.
       final hadToken = tokens.accessToken != null;
       tokens.accessToken = null;
       onSessionExpired?.call();
-      if (hadToken) return _raw(method, path, body: body, query: query, retried: true, attempt: attempt);
+      if (hadToken) return _raw(method, path, body: _again(body), query: query, retried: true, attempt: attempt);
     }
 
     if (status >= 200 && status < 300 && json['success'] == true) {

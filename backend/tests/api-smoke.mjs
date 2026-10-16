@@ -348,6 +348,29 @@ const delOffer = await call("DELETE", `/api/seasonal/offerings/${smokeOffer.data
 check("offering with tokens can't be deleted", delOffer.status === 409);
 await call("PATCH", `/api/seasonal/offerings/${smokeOffer.data?.id}`, { token: ownerT, body: { isActive: false } });
 
+console.log("Gallery photos");
+{
+  const { default: sharp } = await import("sharp");
+  // A 2400×1200 PNG: the server should shrink it to fit 1600px and store a JPEG.
+  const png = await sharp({ create: { width: 2400, height: 1200, channels: 3, background: { r: 142, g: 75, b: 97 } } }).png().toBuffer();
+  const upload = async (token, bytes, name = "photo.png") => {
+    const form = new FormData();
+    form.append("file", new Blob([bytes]), name);
+    const r = await fetch(BASE + "/api/salon/photos", { method: "POST", headers: token ? { Authorization: `Bearer ${token}` } : {}, body: form });
+    return { status: r.status, ...(await r.json()) };
+  };
+  const up = await upload(ownerT, png);
+  check("admin uploads a gallery photo", up.status === 201 && up.data.photos.includes(up.data.url), up.message);
+  const img = await fetch(up.data.url);
+  const meta = await sharp(Buffer.from(await img.arrayBuffer())).metadata();
+  check("photo is served resized as JPEG", img.status === 200 && img.headers.get("content-type") === "image/jpeg" && meta.width === 1600 && meta.height === 800, meta);
+  check("profile lists the photo", (await call("GET", "/api/salons/maison-beauty")).data.photos.includes(up.data.url));
+  check("an artist can not upload photos", (await upload(staff.accessToken, png)).status === 403);
+  check("a non-image is refused", (await upload(ownerT, Buffer.from("hello"), "x.txt")).status === 400);
+  const del = await call("DELETE", `/api/salon/photos?url=${encodeURIComponent(up.data.url)}`, { token: ownerT });
+  check("removing a photo deletes it", del.status === 200 && !del.data.photos.includes(up.data.url) && (await fetch(up.data.url)).status === 404);
+}
+
 console.log("Cron, reports, notifications");
 const cronNo = await call("GET", "/api/cron/reminders");
 check("cron requires secret", cronNo.status === 401);

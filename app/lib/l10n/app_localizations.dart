@@ -3791,8 +3791,26 @@ abstract class AppLocalizations {
   /// No description provided for @settingsGalleryHelp.
   ///
   /// In en, this message translates to:
-  /// **'One image link per line — shown as the swipeable header on your page.'**
+  /// **'The first photo shows first. Drag to reorder.'**
   String get settingsGalleryHelp;
+
+  /// No description provided for @settingsGalleryAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get settingsGalleryAdd;
+
+  /// No description provided for @settingsGalleryAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos added to your gallery'**
+  String get settingsGalleryAdded;
+
+  /// No description provided for @settingsGalleryFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'First'**
+  String get settingsGalleryFirst;
 }
 
 class _AppLocalizationsDelegate
